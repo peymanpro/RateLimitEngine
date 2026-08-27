@@ -1,5 +1,6 @@
 using RateLimitEngine.Core.Abstractions;
 using RateLimitEngine.Core.Models;
+using RateLimitEngine.Redis.Infrastructure;
 using StackExchange.Redis;
 
 namespace RateLimitEngine.Redis.FixedWindow;
@@ -47,12 +48,12 @@ local ttl =
 return { 1, updated, ttl }
 ";
 
-    private readonly IDatabase _database;
+    private readonly IRedisScriptExecutor _executor;
 
-    public RedisFixedWindowStore(IDatabase database)
+    public RedisFixedWindowStore(IRedisScriptExecutor executor)
     {
-        ArgumentNullException.ThrowIfNull(database);
-        _database = database;
+        ArgumentNullException.ThrowIfNull(executor);
+        _executor = executor;
     }
 
     public async ValueTask<FixedWindowStoreResult> IncrementAsync(
@@ -64,15 +65,32 @@ return { 1, updated, ttl }
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            throw new ArgumentException(
+                "Redis rate limit key cannot be null or empty.",
+                nameof(key));
+        }
+
         if (window <= TimeSpan.Zero)
         {
             throw new ArgumentOutOfRangeException(nameof(window));
         }
 
+        if (permitLimit <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(permitLimit));
+        }
+
+        if (cost <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(cost));
+        }
+
         var redisKey =
             $"ratelimit:fixed-window:{key}";
 
-        var result = await _database.ScriptEvaluateAsync(
+        var result = await _executor.ExecuteAsync(
             Script,
             new RedisKey[] { redisKey },
             new RedisValue[]
@@ -80,7 +98,14 @@ return { 1, updated, ttl }
                 checked((long)window.TotalMilliseconds),
                 cost,
                 permitLimit
-            });
+            },
+            cancellationToken);
+
+        if (result.IsNull)
+        {
+            throw new InvalidOperationException(
+                "Redis rate limit script returned a null result.");
+        }
 
         var values = (RedisResult[])result!;
 
