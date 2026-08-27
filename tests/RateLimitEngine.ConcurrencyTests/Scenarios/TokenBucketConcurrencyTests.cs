@@ -1,5 +1,6 @@
 using RateLimitEngine.Algorithms.TokenBucket;
 using RateLimitEngine.Core.Models;
+using RateLimitEngine.Algorithms.InMemory;
 using RateLimitEngine.Testing;
 
 namespace RateLimitEngine.ConcurrencyTests.Scenarios;
@@ -19,9 +20,7 @@ public sealed class TokenBucketConcurrencyTests
                 0,
                 TimeSpan.Zero));
 
-        var limiter = new TokenBucketRateLimiter(
-            clock,
-            new TokenBucketOptions(capacity: 250));
+        var limiter = new TokenBucketRateLimiter(new InMemoryTokenBucketStore(clock), new TokenBucketOptions(capacity: 250));
 
         var policy = new RateLimitPolicy(
             permitLimit: 100,
@@ -46,3 +45,4 @@ public sealed class TokenBucketConcurrencyTests
             decisions.Count(static decision => !decision.Allowed));
     }
 }
+
