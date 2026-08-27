@@ -18,13 +18,15 @@ public sealed class InMemoryFixedWindowStore : IFixedWindowStore
 
     public ValueTask<FixedWindowStoreResult> IncrementAsync(
         string key,
-        DateTimeOffset windowStart,
         TimeSpan window,
         int permitLimit,
         int cost,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+
+        var now = _clock.UtcNow;
+        var windowStart = GetWindowStart(now, window);
 
         var stateKey = new RateLimitStateKey(
             key,
@@ -47,8 +49,8 @@ public sealed class InMemoryFixedWindowStore : IFixedWindowStore
                 0,
                 permitLimit - state.Consumed);
 
-            var resetAfter =
-                windowStart + window - _clock.UtcNow;
+            var resetAfter = MaxZero(
+                windowStart + window - now);
 
             if (cost > remaining)
             {
@@ -57,7 +59,7 @@ public sealed class InMemoryFixedWindowStore : IFixedWindowStore
                         Accepted: false,
                         Consumed: state.Consumed,
                         Remaining: remaining,
-                        ResetAfter: MaxZero(resetAfter)));
+                        ResetAfter: resetAfter));
             }
 
             state.Consumed += cost;
@@ -67,8 +69,22 @@ public sealed class InMemoryFixedWindowStore : IFixedWindowStore
                     Accepted: true,
                     Consumed: state.Consumed,
                     Remaining: permitLimit - state.Consumed,
-                    ResetAfter: MaxZero(resetAfter)));
+                    ResetAfter: resetAfter));
         }
+    }
+
+    private static DateTimeOffset GetWindowStart(
+        DateTimeOffset timestamp,
+        TimeSpan window)
+    {
+        var elapsedTicks =
+            (timestamp - DateTimeOffset.UnixEpoch).Ticks;
+
+        var windowTicks = window.Ticks;
+        var windowIndex = elapsedTicks / windowTicks;
+
+        return DateTimeOffset.UnixEpoch.AddTicks(
+            windowIndex * windowTicks);
     }
 
     private static TimeSpan MaxZero(TimeSpan value) =>

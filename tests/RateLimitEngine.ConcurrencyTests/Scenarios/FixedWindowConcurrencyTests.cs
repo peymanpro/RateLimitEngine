@@ -20,7 +20,7 @@ public sealed class FixedWindowConcurrencyTests
                 0,
                 TimeSpan.Zero));
 
-        var limiter = new FixedWindowRateLimiter(clock, new InMemoryFixedWindowStore(clock));
+        var limiter = new FixedWindowRateLimiter(new InMemoryFixedWindowStore(clock));
 
         var policy = new RateLimitPolicy(
             permitLimit: 100,
@@ -45,4 +45,5 @@ public sealed class FixedWindowConcurrencyTests
             decisions.Count(static decision => !decision.Allowed));
     }
 }
+
 

@@ -18,7 +18,7 @@ public sealed class RateLimiterContractTests
         [
             "fixed-window",
             new Func<IClock, IRateLimiter>(clock =>
-                new FixedWindowRateLimiter(clock, new InMemoryFixedWindowStore(clock)))
+                new FixedWindowRateLimiter(new InMemoryFixedWindowStore(clock)))
         ];
 
         yield return
@@ -125,6 +125,7 @@ public sealed class RateLimiterContractTests
             permitLimit: 5,
             window: TimeSpan.FromSeconds(5));
 }
+
 
 
 
