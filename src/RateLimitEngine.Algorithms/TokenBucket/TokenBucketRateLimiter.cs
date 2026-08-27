@@ -7,9 +7,12 @@ namespace RateLimitEngine.Algorithms.TokenBucket;
 
 public sealed class TokenBucketRateLimiter : IRateLimiter
 {
+    private const int CleanupInterval = 256;
+
     private readonly IClock _clock;
     private readonly TokenBucketOptions _options;
     private readonly ConcurrentDictionary<RateLimitStateKey, BucketState> _states = new();
+    private int _operationsSinceCleanup;
 
     public TokenBucketRateLimiter(
         IClock clock,
@@ -45,6 +48,10 @@ public sealed class TokenBucketRateLimiter : IRateLimiter
                 _options.Capacity,
                 _clock.GetTimestamp()));
 
+        RateLimitDecision decision;
+        var now = _clock.UtcNow;
+        var nowTimestamp = _clock.GetTimestamp();
+
         lock (state.SyncRoot)
         {
             var elapsed = _clock.GetElapsedTime(state.LastTimestamp);
@@ -55,7 +62,7 @@ public sealed class TokenBucketRateLimiter : IRateLimiter
                     _options.Capacity,
                     state.Tokens + elapsed.TotalSeconds * refillRate);
 
-                state.LastTimestamp = _clock.GetTimestamp();
+                state.LastTimestamp = nowTimestamp;
             }
 
             var remaining = Math.Max(
@@ -66,33 +73,71 @@ public sealed class TokenBucketRateLimiter : IRateLimiter
                 request.Cost <= _options.Capacity)
             {
                 state.Tokens -= request.Cost;
+                state.LastActivity = now;
 
                 remaining = Math.Max(
                     0,
                     (int)Math.Floor(state.Tokens));
 
-                return ValueTask.FromResult(
-                    new RateLimitDecision(
-                        allowed: true,
-                        limit: policy.PermitLimit,
-                        remaining: remaining));
+                decision = new RateLimitDecision(
+                    allowed: true,
+                    limit: policy.PermitLimit,
+                    remaining: remaining);
             }
+            else
+            {
+                var missingTokens = Math.Max(
+                    0,
+                    request.Cost - state.Tokens);
 
-            var missingTokens = Math.Max(
-                0,
-                request.Cost - state.Tokens);
+                var retryAfter = missingTokens == 0
+                    ? TimeSpan.Zero
+                    : TimeSpan.FromSeconds(
+                        missingTokens / refillRate);
 
-            var retryAfter = missingTokens == 0
-                ? TimeSpan.Zero
-                : TimeSpan.FromSeconds(
-                    missingTokens / refillRate);
+                state.LastActivity = now;
 
-            return ValueTask.FromResult(
-                new RateLimitDecision(
+                decision = new RateLimitDecision(
                     allowed: false,
                     limit: policy.PermitLimit,
                     remaining: remaining,
-                    retryAfter: retryAfter));
+                    retryAfter: retryAfter);
+            }
+        }
+
+        TriggerCleanupIfNeeded(now, nowTimestamp);
+
+        return ValueTask.FromResult(decision);
+    }
+
+    private void TriggerCleanupIfNeeded(
+        DateTimeOffset now,
+        long nowTimestamp)
+    {
+        if (Interlocked.Increment(ref _operationsSinceCleanup) < CleanupInterval)
+        {
+            return;
+        }
+
+        Interlocked.Exchange(ref _operationsSinceCleanup, 0);
+
+        foreach (var pair in _states)
+        {
+            var state = pair.Value;
+
+            lock (state.SyncRoot)
+            {
+                var elapsed = _clock.GetElapsedTime(state.LastTimestamp);
+
+                if (state.Tokens >= _options.Capacity &&
+                    elapsed >= pair.Key.Window)
+                {
+                    _states.TryRemove(
+                        new KeyValuePair<RateLimitStateKey, BucketState>(
+                            pair.Key,
+                            state));
+                }
+            }
         }
     }
 
@@ -111,5 +156,7 @@ public sealed class TokenBucketRateLimiter : IRateLimiter
         public double Tokens { get; set; }
 
         public long LastTimestamp { get; set; }
+
+        public DateTimeOffset LastActivity { get; set; }
     }
 }
