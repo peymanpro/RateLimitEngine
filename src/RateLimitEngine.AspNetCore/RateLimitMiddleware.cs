@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http;
-
 using RateLimitEngine.Core.Abstractions;
 using RateLimitEngine.Core.Models;
 
@@ -45,10 +44,34 @@ public sealed class RateLimitMiddleware
             _options.PermitLimit,
             _options.Window);
 
-        var decision = await limiter.EvaluateAsync(
-            request,
-            policy,
-            context.RequestAborted);
+        RateLimitDecision decision;
+
+        try
+        {
+            decision = await limiter.EvaluateAsync(
+                request,
+                policy,
+                context.RequestAborted);
+        }
+        catch (OperationCanceledException)
+            when (context.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            if (_options.FailureStrategy ==
+                RateLimitFailureStrategy.FailOpen)
+            {
+                await _next(context);
+                return;
+            }
+
+            context.Response.StatusCode =
+                StatusCodes.Status503ServiceUnavailable;
+
+            return;
+        }
 
         WriteHeaders(context.Response, decision);
 
@@ -76,7 +99,9 @@ public sealed class RateLimitMiddleware
         if (decision.ResetAfter is { } resetAfter)
         {
             response.Headers["X-RateLimit-Reset-After"] =
-                Math.Ceiling(resetAfter.TotalSeconds).ToString();
+                Math.Ceiling(
+                    resetAfter.TotalSeconds)
+                .ToString();
         }
 
         if (!decision.Allowed &&
@@ -91,4 +116,3 @@ public sealed class RateLimitMiddleware
         }
     }
 }
-

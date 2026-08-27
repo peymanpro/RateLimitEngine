@@ -69,6 +69,18 @@ public static class RateLimitMiddlewareExtensions
                 $"Unsupported rate limit algorithm '{algorithmName}'.");
         }
 
+        var failureStrategyName =
+            section["FailureStrategy"] ?? "FailOpen";
+
+        if (!Enum.TryParse<RateLimitFailureStrategy>(
+                failureStrategyName,
+                ignoreCase: true,
+                out var failureStrategy))
+        {
+            throw new InvalidOperationException(
+                $"Unsupported rate limit failure strategy '{failureStrategyName}'.");
+        }
+
         var options = new RateLimitOptions
         {
             Backend = backend,
@@ -160,3 +172,4 @@ public static class RateLimitMiddlewareExtensions
         return parsed;
     }
 }
+
