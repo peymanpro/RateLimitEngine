@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using RateLimitEngine.Core.Abstractions;
 using RateLimitEngine.Core.Models;
 using RateLimitEngine.Core.Time;
@@ -7,19 +6,21 @@ namespace RateLimitEngine.Algorithms.FixedWindow;
 
 public sealed class FixedWindowRateLimiter : IRateLimiter
 {
-    private const int CleanupInterval = 256;
-
     private readonly IClock _clock;
-    private readonly ConcurrentDictionary<RateLimitStateKey, WindowState> _states = new();
-    private int _operationsSinceCleanup;
+    private readonly IFixedWindowStore _store;
 
-    public FixedWindowRateLimiter(IClock clock)
+    public FixedWindowRateLimiter(
+        IClock clock,
+        IFixedWindowStore store)
     {
         ArgumentNullException.ThrowIfNull(clock);
+        ArgumentNullException.ThrowIfNull(store);
+
         _clock = clock;
+        _store = store;
     }
 
-    public ValueTask<RateLimitDecision> EvaluateAsync(
+    public async ValueTask<RateLimitDecision> EvaluateAsync(
         RateLimitRequest request,
         RateLimitPolicy policy,
         CancellationToken cancellationToken = default)
@@ -32,111 +33,35 @@ public sealed class FixedWindowRateLimiter : IRateLimiter
         var now = _clock.UtcNow;
         var windowStart = GetWindowStart(now, policy.Window);
 
-        var stateKey = new RateLimitStateKey(
+        var result = await _store.IncrementAsync(
             request.Key,
+            windowStart,
+            policy.Window,
             policy.PermitLimit,
-            policy.Window);
+            request.Cost,
+            cancellationToken);
 
-        var state = _states.GetOrAdd(
-            stateKey,
-            static _ => new WindowState());
-
-        RateLimitDecision decision;
-
-        lock (state.SyncRoot)
-        {
-            if (state.WindowStart != windowStart)
-            {
-                state.WindowStart = windowStart;
-                state.Count = 0;
-            }
-
-            var resetAfter = windowStart + policy.Window - now;
-
-            if (request.Cost > policy.PermitLimit)
-            {
-                decision = new RateLimitDecision(
-                    allowed: false,
-                    limit: policy.PermitLimit,
-                    remaining: policy.PermitLimit - state.Count,
-                    resetAfter: resetAfter,
-                    retryAfter: resetAfter);
-            }
-            else
-            {
-                var remaining = policy.PermitLimit - state.Count;
-
-                if (request.Cost <= remaining)
-                {
-                    state.Count += request.Cost;
-
-                    decision = new RateLimitDecision(
-                        allowed: true,
-                        limit: policy.PermitLimit,
-                        remaining: policy.PermitLimit - state.Count,
-                        resetAfter: resetAfter);
-                }
-                else
-                {
-                    decision = new RateLimitDecision(
-                        allowed: false,
-                        limit: policy.PermitLimit,
-                        remaining: remaining,
-                        resetAfter: resetAfter,
-                        retryAfter: resetAfter);
-                }
-            }
-        }
-
-        TriggerCleanupIfNeeded(now);
-
-        return ValueTask.FromResult(decision);
-    }
-
-    private void TriggerCleanupIfNeeded(DateTimeOffset now)
-    {
-        if (Interlocked.Increment(ref _operationsSinceCleanup) < CleanupInterval)
-        {
-            return;
-        }
-
-        Interlocked.Exchange(ref _operationsSinceCleanup, 0);
-
-        foreach (var pair in _states)
-        {
-            var state = pair.Value;
-
-            lock (state.SyncRoot)
-            {
-                if (state.WindowStart + pair.Key.Window <= now)
-                {
-                    _states.TryRemove(
-                        new KeyValuePair<RateLimitStateKey, WindowState>(
-                            pair.Key,
-                            state));
-                }
-            }
-        }
+        return new RateLimitDecision(
+            allowed: result.Accepted,
+            limit: policy.PermitLimit,
+            remaining: result.Remaining,
+            resetAfter: result.ResetAfter,
+            retryAfter: result.Accepted
+                ? null
+                : result.ResetAfter);
     }
 
     private static DateTimeOffset GetWindowStart(
         DateTimeOffset timestamp,
         TimeSpan window)
     {
-        var elapsedTicks = (timestamp - DateTimeOffset.UnixEpoch).Ticks;
+        var elapsedTicks =
+            (timestamp - DateTimeOffset.UnixEpoch).Ticks;
+
         var windowTicks = window.Ticks;
         var windowIndex = elapsedTicks / windowTicks;
 
-        return DateTimeOffset.UnixEpoch.AddTicks(windowIndex * windowTicks);
-    }
-
-    private sealed class WindowState
-    {
-        public object SyncRoot { get; } = new();
-
-        public DateTimeOffset WindowStart { get; set; }
-
-        public int Count { get; set; }
+        return DateTimeOffset.UnixEpoch.AddTicks(
+            windowIndex * windowTicks);
     }
 }
-

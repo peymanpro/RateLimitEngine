@@ -1,5 +1,6 @@
 using RateLimitEngine.Algorithms.FixedWindow;
 using RateLimitEngine.Algorithms.Gcra;
+using RateLimitEngine.Algorithms.InMemory;
 using RateLimitEngine.Algorithms.SlidingWindow;
 using RateLimitEngine.Algorithms.TokenBucket;
 using RateLimitEngine.Core.Abstractions;
@@ -17,7 +18,7 @@ public sealed class RateLimiterContractTests
         [
             "fixed-window",
             new Func<IClock, IRateLimiter>(clock =>
-                new FixedWindowRateLimiter(clock))
+                new FixedWindowRateLimiter(clock, new InMemoryFixedWindowStore(clock)))
         ];
 
         yield return
@@ -31,9 +32,7 @@ public sealed class RateLimiterContractTests
         [
             "token-bucket",
             new Func<IClock, IRateLimiter>(clock =>
-                new TokenBucketRateLimiter(
-                    clock,
-                    new TokenBucketOptions(capacity: 5)))
+                new TokenBucketRateLimiter(new InMemoryTokenBucketStore(clock), new TokenBucketOptions(capacity: 5)))
         ];
 
         yield return
@@ -126,5 +125,8 @@ public sealed class RateLimiterContractTests
             permitLimit: 5,
             window: TimeSpan.FromSeconds(5));
 }
+
+
+
 
 
