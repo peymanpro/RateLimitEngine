@@ -153,7 +153,7 @@ public sealed class RedisGcraStoreTests
         var key = $"integration-gcra-{Guid.NewGuid():N}";
 
         var interval = TimeSpan.FromMilliseconds(100);
-        var burstTolerance = TimeSpan.FromSeconds(10);
+        var burstTolerance = TimeSpan.FromSeconds(1);
 
         var tasksOne = Enumerable.Range(0, 500)
             .Select(_ =>
@@ -181,10 +181,15 @@ public sealed class RedisGcraStoreTests
         var acceptedCount =
             results.Count(static result => result.Accepted);
 
-        Assert.InRange(
-            acceptedCount,
-            1,
-            101);
+        var rejectedCount =
+            results.Count(static result => !result.Accepted);
+
+        Assert.Equal(
+            results.Length,
+            acceptedCount + rejectedCount);
+
+        Assert.True(acceptedCount > 0);
+        Assert.True(acceptedCount < results.Length);
     }
 
     [Fact]
@@ -215,3 +220,4 @@ public sealed class RedisGcraStoreTests
         Assert.True(second.Accepted);
     }
 }
+

@@ -88,19 +88,22 @@ public sealed class InMemoryGcraStore : IGcraStore
         TimeSpan interval,
         TimeSpan burstTolerance)
     {
-        if (theoreticalArrivalTime <= now)
+        var leadTime =
+            theoreticalArrivalTime - now;
+
+        var availableBurst =
+            burstTolerance - leadTime;
+
+        if (availableBurst < TimeSpan.Zero)
         {
             return 0;
         }
 
-        var availableTime =
-            theoreticalArrivalTime - now + burstTolerance;
-
         return Math.Max(
             0,
             (int)Math.Floor(
-                availableTime.TotalSeconds /
-                interval.TotalSeconds));
+                availableBurst.Ticks /
+                (double)interval.Ticks) + 1);
     }
 
     private readonly record struct GcraStateKey(
@@ -115,3 +118,4 @@ public sealed class InMemoryGcraStore : IGcraStore
         public DateTimeOffset TheoreticalArrivalTime { get; set; }
     }
 }
+
