@@ -9,22 +9,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var rateLimitSection =
-    builder.Configuration.GetSection("RateLimit");
-
 var backendName =
-    rateLimitSection["Backend"] ?? "InMemory";
+    builder.Configuration["RateLimit:Backend"] ?? "InMemory";
 
-if (!Enum.TryParse<RateLimitBackend>(
+if (Enum.TryParse<RateLimitBackend>(
         backendName,
-        ignoreCase: true,
-        out var backend))
-{
-    throw new InvalidOperationException(
-        $"Unsupported rate limit backend '{backendName}'.");
-}
-
-if (backend == RateLimitBackend.Redis)
+        true,
+        out var backend) &&
+    backend == RateLimitBackend.Redis)
 {
     var connectionString =
         builder.Configuration.GetConnectionString("Redis")

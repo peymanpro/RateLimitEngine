@@ -3,6 +3,8 @@ using RateLimitEngine.Algorithms;
 using RateLimitEngine.Algorithms.TokenBucket;
 using RateLimitEngine.Core.Abstractions;
 using RateLimitEngine.Core.Time;
+using RateLimitEngine.Redis;
+using StackExchange.Redis;
 
 namespace RateLimitEngine.UnitTests.Factory;
 
@@ -33,7 +35,7 @@ public sealed class DependencyInjectionTests
         using var provider = services.BuildServiceProvider();
 
         var clock =
-            provider.GetRequiredService<RateLimitEngine.Core.Time.IClock>();
+            provider.GetRequiredService<IClock>();
 
         Assert.IsType<SystemClock>(clock);
     }
@@ -53,5 +55,27 @@ public sealed class DependencyInjectionTests
 
         Assert.Equal(500, options.Capacity);
     }
-}
 
+    [Fact]
+    public void AddRateLimitEngineRedis_ShouldRegisterFactory()
+    {
+        var services = new ServiceCollection();
+
+        var multiplexer =
+            ConnectionMultiplexer.Connect("localhost:6379");
+
+        var database =
+            multiplexer.GetDatabase();
+
+        services.AddRateLimitEngineRedis(database);
+
+        using var provider = services.BuildServiceProvider();
+
+        var factory =
+            provider.GetRequiredService<IRateLimiterFactory>();
+
+        Assert.IsType<RedisRateLimiterFactory>(factory);
+
+        multiplexer.Dispose();
+    }
+}

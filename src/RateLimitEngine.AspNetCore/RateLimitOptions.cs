@@ -4,6 +4,9 @@ namespace RateLimitEngine.AspNetCore;
 
 public sealed class RateLimitOptions
 {
+    public RateLimitBackend Backend { get; set; } =
+        RateLimitBackend.InMemory;
+
     public RateLimitAlgorithm Algorithm { get; set; } =
         RateLimitAlgorithm.FixedWindow;
 

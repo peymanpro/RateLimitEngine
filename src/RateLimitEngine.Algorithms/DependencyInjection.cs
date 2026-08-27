@@ -18,7 +18,12 @@ public static class DependencyInjection
         services.AddSingleton(
             tokenBucketOptions ?? new TokenBucketOptions(capacity: 100));
 
-        services.AddSingleton<IRateLimiterFactory, InMemoryRateLimiterFactory>();
+        services.AddSingleton<InMemoryRateLimiterFactory>();
+
+        services.AddSingleton<IRateLimiterFactory>(
+            provider =>
+                provider.GetRequiredService<
+                    InMemoryRateLimiterFactory>());
 
         return services;
     }

@@ -22,17 +22,31 @@ public static class DependencyInjection
 
         services.AddSingleton(database);
 
-        services.AddSingleton<IRedisScriptExecutor, RedisScriptExecutor>();
+        services.AddSingleton<IRedisScriptExecutor,
+            RedisScriptExecutor>();
 
-        services.AddSingleton<IFixedWindowStore, RedisFixedWindowStore>();
-        services.AddSingleton<ITokenBucketStore, RedisTokenBucketStore>();
-        services.AddSingleton<ISlidingWindowStore, RedisSlidingWindowStore>();
-        services.AddSingleton<IGcraStore, RedisGcraStore>();
+        services.AddSingleton<IFixedWindowStore,
+            RedisFixedWindowStore>();
+
+        services.AddSingleton<ITokenBucketStore,
+            RedisTokenBucketStore>();
+
+        services.AddSingleton<ISlidingWindowStore,
+            RedisSlidingWindowStore>();
+
+        services.AddSingleton<IGcraStore,
+            RedisGcraStore>();
 
         services.AddSingleton(
-            tokenBucketOptions ?? new TokenBucketOptions(capacity: 100));
+            tokenBucketOptions ??
+            new TokenBucketOptions(capacity: 100));
 
-        services.AddSingleton<IRateLimiterFactory, RedisRateLimiterFactory>();
+        services.AddSingleton<RedisRateLimiterFactory>();
+
+        services.AddSingleton<IRateLimiterFactory>(
+            provider =>
+                provider.GetRequiredService<
+                    RedisRateLimiterFactory>());
 
         return services;
     }

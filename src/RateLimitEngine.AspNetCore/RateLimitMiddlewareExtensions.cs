@@ -21,9 +21,12 @@ public static class RateLimitMiddlewareExtensions
         Validate(options);
 
         services.AddSingleton(options);
-
         services.AddSingleton<IRateLimitKeyResolver,
             RemoteIpRateLimitKeyResolver>();
+        services.AddSingleton<IRateLimiterFactoryProvider,
+            RateLimiterFactoryProvider>();
+        services.AddSingleton<IRateLimiterFactory,
+            ConfigurableRateLimiterFactory>();
 
         return services;
     }
@@ -37,6 +40,18 @@ public static class RateLimitMiddlewareExtensions
         ArgumentNullException.ThrowIfNull(configuration);
 
         var section = configuration.GetSection(sectionName);
+
+        var backendName =
+            section["Backend"] ?? "InMemory";
+
+        if (!Enum.TryParse<RateLimitBackend>(
+                backendName,
+                ignoreCase: true,
+                out var backend))
+        {
+            throw new InvalidOperationException(
+                $"Unsupported rate limit backend '{backendName}'.");
+        }
 
         var algorithmName =
             section["Algorithm"] ?? "FixedWindow";
@@ -67,6 +82,7 @@ public static class RateLimitMiddlewareExtensions
 
         var options = new RateLimitOptions
         {
+            Backend = backend,
             Algorithm = algorithm,
             PermitLimit = permitLimit,
             Window = TimeSpan.FromSeconds(windowSeconds),
@@ -76,13 +92,15 @@ public static class RateLimitMiddlewareExtensions
         Validate(options);
 
         services.AddSingleton(options);
-
         services.AddSingleton<IRateLimitKeyResolver,
             RemoteIpRateLimitKeyResolver>();
+        services.AddSingleton<IRateLimiterFactoryProvider,
+            RateLimiterFactoryProvider>();
+        services.AddSingleton<IRateLimiterFactory,
+            ConfigurableRateLimiterFactory>();
 
         return services;
     }
-
     public static IApplicationBuilder UseRateLimitEngine(
         this IApplicationBuilder app)
     {
@@ -156,3 +174,4 @@ public static class RateLimitMiddlewareExtensions
         }
     }
 }
+

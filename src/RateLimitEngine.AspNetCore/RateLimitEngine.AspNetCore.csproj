@@ -2,8 +2,10 @@
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+
     <ProjectReference Include="..\RateLimitEngine.Core\RateLimitEngine.Core.csproj" />
     <ProjectReference Include="..\RateLimitEngine.Algorithms\RateLimitEngine.Algorithms.csproj" />
+    <ProjectReference Include="..\RateLimitEngine.Redis\RateLimitEngine.Redis.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
