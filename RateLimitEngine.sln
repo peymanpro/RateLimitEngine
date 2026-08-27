@@ -31,6 +31,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{3119
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RateLimitEngine.AspNetCoreDemo", "samples\RateLimitEngine.AspNetCoreDemo\RateLimitEngine.AspNetCoreDemo.csproj", "{CF910FB7-6CC5-410E-98DB-F5D6EB0853A6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RateLimitEngine.Testing", "tests\RateLimitEngine.Testing\RateLimitEngine.Testing.csproj", "{22B5AB92-EE11-48D0-8C60-A7FA0AF9BB55}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,6 +82,10 @@ Global
 		{CF910FB7-6CC5-410E-98DB-F5D6EB0853A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF910FB7-6CC5-410E-98DB-F5D6EB0853A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF910FB7-6CC5-410E-98DB-F5D6EB0853A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22B5AB92-EE11-48D0-8C60-A7FA0AF9BB55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22B5AB92-EE11-48D0-8C60-A7FA0AF9BB55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22B5AB92-EE11-48D0-8C60-A7FA0AF9BB55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22B5AB92-EE11-48D0-8C60-A7FA0AF9BB55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{75236E49-FB91-4CC4-8C28-3F60037DEDE3} = {523885DF-CFF1-4E6B-B72D-3C29F0630126}
@@ -92,5 +98,6 @@ Global
 		{683FFD3D-B36E-49F3-B7D6-688E383E0925} = {941B9693-4060-47FA-9F44-8F46831955F2}
 		{1804FAA5-849F-40A7-9166-BB89DEE56963} = {17923EDF-CF88-4388-8A81-DCCE01FD6565}
 		{CF910FB7-6CC5-410E-98DB-F5D6EB0853A6} = {31190D15-793F-4E35-9B72-768B4F85EDDF}
+		{22B5AB92-EE11-48D0-8C60-A7FA0AF9BB55} = {941B9693-4060-47FA-9F44-8F46831955F2}
 	EndGlobalSection
 EndGlobal
