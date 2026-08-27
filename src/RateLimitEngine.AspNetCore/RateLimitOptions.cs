@@ -10,6 +10,9 @@ public sealed class RateLimitOptions
     public RateLimitAlgorithm Algorithm { get; set; } =
         RateLimitAlgorithm.FixedWindow;
 
+    public RateLimitFailureStrategy FailureStrategy { get; set; } =
+        RateLimitFailureStrategy.FailOpen;
+
     public int PermitLimit { get; set; } = 100;
 
     public TimeSpan Window { get; set; } =
@@ -29,6 +32,12 @@ public sealed class RateLimitOptions
         {
             throw new InvalidOperationException(
                 $"Unsupported rate limit algorithm '{Algorithm}'.");
+        }
+
+        if (!Enum.IsDefined(FailureStrategy))
+        {
+            throw new InvalidOperationException(
+                $"Unsupported rate limit failure strategy '{FailureStrategy}'.");
         }
 
         if (PermitLimit <= 0)
