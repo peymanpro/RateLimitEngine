@@ -1,5 +1,6 @@
 using RateLimitEngine.Algorithms.TokenBucket;
 using RateLimitEngine.Core.Models;
+using RateLimitEngine.Algorithms.InMemory;
 
 namespace RateLimitEngine.UnitTests.TokenBucket;
 
@@ -12,7 +13,7 @@ public sealed class TokenBucketRateLimiterTests
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
         var options = new TokenBucketOptions(capacity: 5);
-        var limiter = new TokenBucketRateLimiter(clock, options);
+        var limiter = new TokenBucketRateLimiter(new InMemoryTokenBucketStore(clock), options);
 
         var policy = new RateLimitPolicy(
             permitLimit: 5,
@@ -34,7 +35,7 @@ public sealed class TokenBucketRateLimiterTests
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
         var options = new TokenBucketOptions(capacity: 2);
-        var limiter = new TokenBucketRateLimiter(clock, options);
+        var limiter = new TokenBucketRateLimiter(new InMemoryTokenBucketStore(clock), options);
 
         var policy = new RateLimitPolicy(
             permitLimit: 2,
@@ -65,7 +66,7 @@ public sealed class TokenBucketRateLimiterTests
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
         var options = new TokenBucketOptions(capacity: 5);
-        var limiter = new TokenBucketRateLimiter(clock, options);
+        var limiter = new TokenBucketRateLimiter(new InMemoryTokenBucketStore(clock), options);
 
         var policy = new RateLimitPolicy(
             permitLimit: 5,
@@ -92,7 +93,7 @@ public sealed class TokenBucketRateLimiterTests
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
         var options = new TokenBucketOptions(capacity: 5);
-        var limiter = new TokenBucketRateLimiter(clock, options);
+        var limiter = new TokenBucketRateLimiter(new InMemoryTokenBucketStore(clock), options);
 
         var policy = new RateLimitPolicy(
             permitLimit: 5,
@@ -115,7 +116,7 @@ public sealed class TokenBucketRateLimiterTests
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
         var options = new TokenBucketOptions(capacity: 5);
-        var limiter = new TokenBucketRateLimiter(clock, options);
+        var limiter = new TokenBucketRateLimiter(new InMemoryTokenBucketStore(clock), options);
 
         var policy = new RateLimitPolicy(
             permitLimit: 5,
@@ -136,7 +137,7 @@ public sealed class TokenBucketRateLimiterTests
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
         var options = new TokenBucketOptions(capacity: 1);
-        var limiter = new TokenBucketRateLimiter(clock, options);
+        var limiter = new TokenBucketRateLimiter(new InMemoryTokenBucketStore(clock), options);
 
         var policy = new RateLimitPolicy(
             permitLimit: 1,
@@ -161,7 +162,7 @@ public sealed class TokenBucketRateLimiterTests
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
         var options = new TokenBucketOptions(capacity: 5);
-        var limiter = new TokenBucketRateLimiter(clock, options);
+        var limiter = new TokenBucketRateLimiter(new InMemoryTokenBucketStore(clock), options);
 
         var policy = new RateLimitPolicy(
             permitLimit: 5,
@@ -184,7 +185,7 @@ public sealed class TokenBucketRateLimiterTests
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
         var options = new TokenBucketOptions(capacity: 100);
-        var limiter = new TokenBucketRateLimiter(clock, options);
+        var limiter = new TokenBucketRateLimiter(new InMemoryTokenBucketStore(clock), options);
 
         var policy = new RateLimitPolicy(
             permitLimit: 100,
@@ -211,7 +212,7 @@ public sealed class TokenBucketRateLimiterTests
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
         var options = new TokenBucketOptions(capacity: 10);
-        var limiter = new TokenBucketRateLimiter(clock, options);
+        var limiter = new TokenBucketRateLimiter(new InMemoryTokenBucketStore(clock), options);
 
         var lowRatePolicy = new RateLimitPolicy(
             permitLimit: 2,
@@ -234,4 +235,6 @@ public sealed class TokenBucketRateLimiterTests
         Assert.Equal(9, lowRateDecision.Remaining);
     }
 }
+
+
 
