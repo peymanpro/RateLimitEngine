@@ -1,24 +1,15 @@
 using RateLimitEngine.Algorithms;
 using RateLimitEngine.AspNetCore;
-using RateLimitEngine.Core.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddRateLimitEngineInMemory(
-    new RateLimitEngine.Algorithms.TokenBucket.TokenBucketOptions(
-        capacity: 100));
+builder.Services.AddRateLimitEngineInMemory();
 
 builder.Services.AddRateLimitEngine(
-    options =>
-    {
-        options.Algorithm = RateLimitAlgorithm.FixedWindow;
-        options.PermitLimit = 5;
-        options.Window = TimeSpan.FromSeconds(10);
-        options.Cost = 1;
-    });
+    builder.Configuration);
 
 var app = builder.Build();
 
