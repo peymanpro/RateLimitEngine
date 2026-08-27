@@ -130,11 +130,6 @@ public sealed class FixedWindowRateLimiter : IRateLimiter
         return DateTimeOffset.UnixEpoch.AddTicks(windowIndex * windowTicks);
     }
 
-    private readonly record struct RateLimitStateKey(
-        string Key,
-        int PermitLimit,
-        TimeSpan Window);
-
     private sealed class WindowState
     {
         public object SyncRoot { get; } = new();
@@ -144,3 +139,4 @@ public sealed class FixedWindowRateLimiter : IRateLimiter
         public int Count { get; set; }
     }
 }
+

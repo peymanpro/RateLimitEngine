@@ -8,7 +8,7 @@ namespace RateLimitEngine.Algorithms.Gcra;
 public sealed class GcraRateLimiter : IRateLimiter
 {
     private readonly IClock _clock;
-    private readonly ConcurrentDictionary<GcraStateKey, GcraState> _states = new();
+    private readonly ConcurrentDictionary<RateLimitStateKey, GcraState> _states = new();
 
     public GcraRateLimiter(IClock clock)
     {
@@ -38,7 +38,7 @@ public sealed class GcraRateLimiter : IRateLimiter
         var interval = policy.Window / (double)policy.PermitLimit;
         var burstTolerance = interval * (policy.PermitLimit - 1);
 
-        var stateKey = new GcraStateKey(
+        var stateKey = new RateLimitStateKey(
             request.Key,
             policy.PermitLimit,
             policy.Window);
@@ -120,11 +120,6 @@ public sealed class GcraRateLimiter : IRateLimiter
             (int)Math.Floor(availableTime.TotalSeconds / interval.TotalSeconds));
     }
 
-    private readonly record struct GcraStateKey(
-        string Key,
-        int PermitLimit,
-        TimeSpan Window);
-
     private sealed class GcraState
     {
         public object SyncRoot { get; } = new();
@@ -132,5 +127,6 @@ public sealed class GcraRateLimiter : IRateLimiter
         public DateTimeOffset TheoreticalArrivalTime { get; set; }
     }
 }
+
 
 
