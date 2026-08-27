@@ -55,10 +55,17 @@ public sealed class InMemoryRateLimiterFactory : IRateLimiterFactory
     {
         return algorithm switch
         {
-            RateLimitAlgorithm.FixedWindow => _fixedWindow,
-            RateLimitAlgorithm.SlidingWindow => _slidingWindow,
-            RateLimitAlgorithm.TokenBucket => _tokenBucket,
-            RateLimitAlgorithm.Gcra => _gcra,
+            RateLimitAlgorithm.FixedWindow =>
+                _fixedWindow,
+
+            RateLimitAlgorithm.SlidingWindow =>
+                _slidingWindow,
+
+            RateLimitAlgorithm.TokenBucket =>
+                _tokenBucket,
+
+            RateLimitAlgorithm.Gcra =>
+                _gcra,
 
             _ => throw new ArgumentOutOfRangeException(
                 nameof(algorithm),
@@ -67,4 +74,3 @@ public sealed class InMemoryRateLimiterFactory : IRateLimiterFactory
         };
     }
 }
-
