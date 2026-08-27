@@ -186,11 +186,6 @@ public sealed class SlidingWindowRateLimiter : IRateLimiter
         return TimeSpan.Zero;
     }
 
-    private readonly record struct RateLimitStateKey(
-        string Key,
-        int PermitLimit,
-        TimeSpan Window);
-
     private readonly record struct WindowEntry(
         DateTimeOffset Timestamp,
         int Cost);
@@ -204,3 +199,5 @@ public sealed class SlidingWindowRateLimiter : IRateLimiter
         public int ConsumedPermits { get; set; }
     }
 }
+
+
