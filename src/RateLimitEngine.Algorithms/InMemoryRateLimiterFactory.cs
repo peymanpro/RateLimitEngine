@@ -11,8 +11,10 @@ namespace RateLimitEngine.Algorithms;
 
 public sealed class InMemoryRateLimiterFactory : IRateLimiterFactory
 {
-    private readonly IClock _clock;
-    private readonly RateLimiterOptions _options;
+    private readonly IRateLimiter _fixedWindow;
+    private readonly IRateLimiter _slidingWindow;
+    private readonly IRateLimiter _tokenBucket;
+    private readonly IRateLimiter _gcra;
 
     public InMemoryRateLimiterFactory(
         IClock clock,
@@ -20,15 +22,32 @@ public sealed class InMemoryRateLimiterFactory : IRateLimiterFactory
     {
         ArgumentNullException.ThrowIfNull(clock);
 
-        _clock = clock;
-        _options = options ?? new RateLimiterOptions();
+        options ??= new RateLimiterOptions();
 
-        if (!_options.Validate())
+        if (!options.Validate())
         {
             throw new ArgumentException(
                 "Invalid rate limiter options.",
                 nameof(options));
         }
+
+        _fixedWindow =
+            new FixedWindowRateLimiter(
+                new InMemoryFixedWindowStore(clock));
+
+        _slidingWindow =
+            new SlidingWindowRateLimiter(
+                new InMemorySlidingWindowStore(clock));
+
+        _tokenBucket =
+            new TokenBucketRateLimiter(
+                new InMemoryTokenBucketStore(clock),
+                new TokenBucketOptions(
+                    options.TokenBucketCapacity));
+
+        _gcra =
+            new GcraRateLimiter(
+                new InMemoryGcraStore(clock));
     }
 
     public IRateLimiter Create(
@@ -36,23 +55,10 @@ public sealed class InMemoryRateLimiterFactory : IRateLimiterFactory
     {
         return algorithm switch
         {
-            RateLimitAlgorithm.FixedWindow =>
-                new FixedWindowRateLimiter(
-                    new InMemoryFixedWindowStore(_clock)),
-
-            RateLimitAlgorithm.SlidingWindow =>
-                new SlidingWindowRateLimiter(
-                    new InMemorySlidingWindowStore(_clock)),
-
-            RateLimitAlgorithm.TokenBucket =>
-                new TokenBucketRateLimiter(
-                    new InMemoryTokenBucketStore(_clock),
-                    new TokenBucketOptions(
-                        _options.TokenBucketCapacity)),
-
-            RateLimitAlgorithm.Gcra =>
-                new GcraRateLimiter(
-                    new InMemoryGcraStore(_clock)),
+            RateLimitAlgorithm.FixedWindow => _fixedWindow,
+            RateLimitAlgorithm.SlidingWindow => _slidingWindow,
+            RateLimitAlgorithm.TokenBucket => _tokenBucket,
+            RateLimitAlgorithm.Gcra => _gcra,
 
             _ => throw new ArgumentOutOfRangeException(
                 nameof(algorithm),
