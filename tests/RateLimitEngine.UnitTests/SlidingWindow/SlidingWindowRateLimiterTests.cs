@@ -1,5 +1,6 @@
 using RateLimitEngine.Algorithms.SlidingWindow;
 using RateLimitEngine.Core.Models;
+using RateLimitEngine.Algorithms.InMemory;
 
 namespace RateLimitEngine.UnitTests.SlidingWindow;
 
@@ -11,7 +12,7 @@ public sealed class SlidingWindowRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new SlidingWindowRateLimiter(clock);
+        var limiter = new SlidingWindowRateLimiter(new InMemorySlidingWindowStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 3,
             window: TimeSpan.FromMinutes(1));
@@ -46,7 +47,7 @@ public sealed class SlidingWindowRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new SlidingWindowRateLimiter(clock);
+        var limiter = new SlidingWindowRateLimiter(new InMemorySlidingWindowStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 2,
             window: TimeSpan.FromMinutes(1));
@@ -83,7 +84,7 @@ public sealed class SlidingWindowRateLimiterTests
             TimeSpan.Zero);
 
         var clock = new FakeClock(start);
-        var limiter = new SlidingWindowRateLimiter(clock);
+        var limiter = new SlidingWindowRateLimiter(new InMemorySlidingWindowStore(clock));
 
         var policy = new RateLimitPolicy(
             permitLimit: 2,
@@ -130,7 +131,7 @@ public sealed class SlidingWindowRateLimiterTests
             TimeSpan.Zero);
 
         var clock = new FakeClock(start);
-        var limiter = new SlidingWindowRateLimiter(clock);
+        var limiter = new SlidingWindowRateLimiter(new InMemorySlidingWindowStore(clock));
 
         var policy = new RateLimitPolicy(
             permitLimit: 1,
@@ -165,7 +166,7 @@ public sealed class SlidingWindowRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new SlidingWindowRateLimiter(clock);
+        var limiter = new SlidingWindowRateLimiter(new InMemorySlidingWindowStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 5,
             window: TimeSpan.FromMinutes(1));
@@ -185,7 +186,7 @@ public sealed class SlidingWindowRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new SlidingWindowRateLimiter(clock);
+        var limiter = new SlidingWindowRateLimiter(new InMemorySlidingWindowStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 5,
             window: TimeSpan.FromMinutes(1));
@@ -205,7 +206,7 @@ public sealed class SlidingWindowRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new SlidingWindowRateLimiter(clock);
+        var limiter = new SlidingWindowRateLimiter(new InMemorySlidingWindowStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 1,
             window: TimeSpan.FromMinutes(1));
@@ -230,7 +231,7 @@ public sealed class SlidingWindowRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new SlidingWindowRateLimiter(clock);
+        var limiter = new SlidingWindowRateLimiter(new InMemorySlidingWindowStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 100,
             window: TimeSpan.FromMinutes(1));
@@ -249,3 +250,4 @@ public sealed class SlidingWindowRateLimiterTests
         Assert.Equal(900, decisions.Count(static decision => !decision.Allowed));
     }
 }
+
