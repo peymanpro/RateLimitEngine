@@ -25,7 +25,7 @@ public sealed class RateLimiterContractTests
         [
             "sliding-window",
             new Func<IClock, IRateLimiter>(clock =>
-                new SlidingWindowRateLimiter(clock))
+                new SlidingWindowRateLimiter(new InMemorySlidingWindowStore(clock)))
         ];
 
         yield return
@@ -125,6 +125,7 @@ public sealed class RateLimiterContractTests
             permitLimit: 5,
             window: TimeSpan.FromSeconds(5));
 }
+
 
 
 
