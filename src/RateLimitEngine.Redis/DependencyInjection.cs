@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using RateLimitEngine.Core.Abstractions;
 using RateLimitEngine.Redis.FixedWindow;
 using RateLimitEngine.Redis.Infrastructure;
+using RateLimitEngine.Redis.TokenBucket;
 
 namespace RateLimitEngine.Redis;
 
@@ -14,6 +15,7 @@ public static class DependencyInjection
 
         services.AddSingleton<IRedisScriptExecutor, RedisScriptExecutor>();
         services.AddSingleton<IFixedWindowStore, RedisFixedWindowStore>();
+        services.AddSingleton<ITokenBucketStore, RedisTokenBucketStore>();
 
         return services;
     }
