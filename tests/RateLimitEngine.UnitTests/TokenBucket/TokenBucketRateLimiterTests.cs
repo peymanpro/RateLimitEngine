@@ -11,18 +11,16 @@ public sealed class TokenBucketRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var options = new TokenBucketOptions(
-            capacity: 5);
-
+        var options = new TokenBucketOptions(capacity: 5);
         var limiter = new TokenBucketRateLimiter(clock, options);
+
         var policy = new RateLimitPolicy(
             permitLimit: 5,
             window: TimeSpan.FromSeconds(5));
 
-        var decision =
-            await limiter.EvaluateAsync(
-                new RateLimitRequest("client-1"),
-                policy);
+        var decision = await limiter.EvaluateAsync(
+            new RateLimitRequest("client-1"),
+            policy);
 
         Assert.True(decision.Allowed);
         Assert.Equal(5, decision.Limit);
@@ -35,10 +33,9 @@ public sealed class TokenBucketRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var options = new TokenBucketOptions(
-            capacity: 2);
-
+        var options = new TokenBucketOptions(capacity: 2);
         var limiter = new TokenBucketRateLimiter(clock, options);
+
         var policy = new RateLimitPolicy(
             permitLimit: 2,
             window: TimeSpan.FromSeconds(2));
@@ -51,10 +48,9 @@ public sealed class TokenBucketRateLimiterTests
             new RateLimitRequest("client-1"),
             policy);
 
-        var decision =
-            await limiter.EvaluateAsync(
-                new RateLimitRequest("client-1"),
-                policy);
+        var decision = await limiter.EvaluateAsync(
+            new RateLimitRequest("client-1"),
+            policy);
 
         Assert.False(decision.Allowed);
         Assert.Equal(0, decision.Remaining);
@@ -68,10 +64,9 @@ public sealed class TokenBucketRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var options = new TokenBucketOptions(
-            capacity: 5);
-
+        var options = new TokenBucketOptions(capacity: 5);
         var limiter = new TokenBucketRateLimiter(clock, options);
+
         var policy = new RateLimitPolicy(
             permitLimit: 5,
             window: TimeSpan.FromSeconds(2.5));
@@ -82,10 +77,9 @@ public sealed class TokenBucketRateLimiterTests
 
         clock.Advance(TimeSpan.FromSeconds(1));
 
-        var decision =
-            await limiter.EvaluateAsync(
-                new RateLimitRequest("client-1"),
-                policy);
+        var decision = await limiter.EvaluateAsync(
+            new RateLimitRequest("client-1"),
+            policy);
 
         Assert.True(decision.Allowed);
         Assert.Equal(1, decision.Remaining);
@@ -97,20 +91,18 @@ public sealed class TokenBucketRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var options = new TokenBucketOptions(
-            capacity: 5);
-
+        var options = new TokenBucketOptions(capacity: 5);
         var limiter = new TokenBucketRateLimiter(clock, options);
+
         var policy = new RateLimitPolicy(
             permitLimit: 5,
             window: TimeSpan.FromMilliseconds(500));
 
         clock.Advance(TimeSpan.FromSeconds(10));
 
-        var decision =
-            await limiter.EvaluateAsync(
-                new RateLimitRequest("client-1"),
-                policy);
+        var decision = await limiter.EvaluateAsync(
+            new RateLimitRequest("client-1"),
+            policy);
 
         Assert.True(decision.Allowed);
         Assert.Equal(4, decision.Remaining);
@@ -122,18 +114,16 @@ public sealed class TokenBucketRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var options = new TokenBucketOptions(
-            capacity: 5);
-
+        var options = new TokenBucketOptions(capacity: 5);
         var limiter = new TokenBucketRateLimiter(clock, options);
+
         var policy = new RateLimitPolicy(
             permitLimit: 5,
             window: TimeSpan.FromSeconds(5));
 
-        var decision =
-            await limiter.EvaluateAsync(
-                new RateLimitRequest("client-1", cost: 3),
-                policy);
+        var decision = await limiter.EvaluateAsync(
+            new RateLimitRequest("client-1", cost: 3),
+            policy);
 
         Assert.True(decision.Allowed);
         Assert.Equal(2, decision.Remaining);
@@ -145,23 +135,20 @@ public sealed class TokenBucketRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var options = new TokenBucketOptions(
-            capacity: 1);
-
+        var options = new TokenBucketOptions(capacity: 1);
         var limiter = new TokenBucketRateLimiter(clock, options);
+
         var policy = new RateLimitPolicy(
             permitLimit: 1,
             window: TimeSpan.FromSeconds(1));
 
-        var first =
-            await limiter.EvaluateAsync(
-                new RateLimitRequest("client-1"),
-                policy);
+        var first = await limiter.EvaluateAsync(
+            new RateLimitRequest("client-1"),
+            policy);
 
-        var second =
-            await limiter.EvaluateAsync(
-                new RateLimitRequest("client-2"),
-                policy);
+        var second = await limiter.EvaluateAsync(
+            new RateLimitRequest("client-2"),
+            policy);
 
         Assert.True(first.Allowed);
         Assert.True(second.Allowed);
@@ -173,18 +160,16 @@ public sealed class TokenBucketRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var options = new TokenBucketOptions(
-            capacity: 5);
-
+        var options = new TokenBucketOptions(capacity: 5);
         var limiter = new TokenBucketRateLimiter(clock, options);
+
         var policy = new RateLimitPolicy(
             permitLimit: 5,
             window: TimeSpan.FromSeconds(5));
 
-        var decision =
-            await limiter.EvaluateAsync(
-                new RateLimitRequest("client-1", cost: 6),
-                policy);
+        var decision = await limiter.EvaluateAsync(
+            new RateLimitRequest("client-1", cost: 6),
+            policy);
 
         Assert.False(decision.Allowed);
         Assert.Equal(5, decision.Remaining);
@@ -198,10 +183,9 @@ public sealed class TokenBucketRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var options = new TokenBucketOptions(
-            capacity: 100);
-
+        var options = new TokenBucketOptions(capacity: 100);
         var limiter = new TokenBucketRateLimiter(clock, options);
+
         var policy = new RateLimitPolicy(
             permitLimit: 100,
             window: TimeSpan.FromSeconds(100));
@@ -219,7 +203,35 @@ public sealed class TokenBucketRateLimiterTests
         Assert.Equal(100, decisions.Count(static decision => decision.Allowed));
         Assert.Equal(900, decisions.Count(static decision => !decision.Allowed));
     }
+
+    [Fact]
+    public async Task EvaluateAsync_ShouldKeepStatesIndependentAcrossPolicies()
+    {
+        var clock = new FakeClock(
+            new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
+
+        var options = new TokenBucketOptions(capacity: 10);
+        var limiter = new TokenBucketRateLimiter(clock, options);
+
+        var lowRatePolicy = new RateLimitPolicy(
+            permitLimit: 2,
+            window: TimeSpan.FromSeconds(2));
+
+        var highRatePolicy = new RateLimitPolicy(
+            permitLimit: 10,
+            window: TimeSpan.FromSeconds(1));
+
+        var highRateDecision = await limiter.EvaluateAsync(
+            new RateLimitRequest("client-1", cost: 10),
+            highRatePolicy);
+
+        var lowRateDecision = await limiter.EvaluateAsync(
+            new RateLimitRequest("client-1", cost: 1),
+            lowRatePolicy);
+
+        Assert.True(highRateDecision.Allowed);
+        Assert.True(lowRateDecision.Allowed);
+        Assert.Equal(9, lowRateDecision.Remaining);
+    }
 }
-
-
 
