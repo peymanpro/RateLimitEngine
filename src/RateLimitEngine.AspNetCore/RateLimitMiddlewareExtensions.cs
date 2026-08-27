@@ -50,23 +50,20 @@ public static class RateLimitMiddlewareExtensions
                 $"Unsupported rate limit algorithm '{algorithmName}'.");
         }
 
-        var permitLimit =
-            ParsePositiveInt(
-                section["PermitLimit"],
-                100,
-                "PermitLimit");
+        var permitLimit = ParsePositiveInt(
+            section["PermitLimit"],
+            100,
+            "PermitLimit");
 
-        var windowSeconds =
-            ParsePositiveDouble(
-                section["WindowSeconds"],
-                60,
-                "WindowSeconds");
+        var windowSeconds = ParsePositiveDouble(
+            section["WindowSeconds"],
+            60,
+            "WindowSeconds");
 
-        var cost =
-            ParsePositiveInt(
-                section["Cost"],
-                1,
-                "Cost");
+        var cost = ParsePositiveInt(
+            section["Cost"],
+            1,
+            "Cost");
 
         var options = new RateLimitOptions
         {
