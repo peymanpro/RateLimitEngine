@@ -1,5 +1,6 @@
 using RateLimitEngine.Algorithms.SlidingWindow;
 using RateLimitEngine.Core.Models;
+using RateLimitEngine.Algorithms.InMemory;
 using RateLimitEngine.Testing;
 
 namespace RateLimitEngine.ConcurrencyTests.Scenarios;
@@ -19,7 +20,7 @@ public sealed class SlidingWindowConcurrencyTests
                 0,
                 TimeSpan.Zero));
 
-        var limiter = new SlidingWindowRateLimiter(clock);
+        var limiter = new SlidingWindowRateLimiter(new InMemorySlidingWindowStore(clock));
 
         var policy = new RateLimitPolicy(
             permitLimit: 100,
@@ -44,3 +45,4 @@ public sealed class SlidingWindowConcurrencyTests
             decisions.Count(static decision => !decision.Allowed));
     }
 }
+
