@@ -1,5 +1,6 @@
 using RateLimitEngine.Algorithms.Gcra;
 using RateLimitEngine.Core.Models;
+using RateLimitEngine.Algorithms.InMemory;
 
 namespace RateLimitEngine.UnitTests.Gcra;
 
@@ -11,7 +12,7 @@ public sealed class GcraRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new GcraRateLimiter(clock);
+        var limiter = new GcraRateLimiter(new InMemoryGcraStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 2,
             window: TimeSpan.FromSeconds(2));
@@ -36,7 +37,7 @@ public sealed class GcraRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new GcraRateLimiter(clock);
+        var limiter = new GcraRateLimiter(new InMemoryGcraStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 2,
             window: TimeSpan.FromSeconds(2));
@@ -65,7 +66,7 @@ public sealed class GcraRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new GcraRateLimiter(clock);
+        var limiter = new GcraRateLimiter(new InMemoryGcraStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 2,
             window: TimeSpan.FromSeconds(2));
@@ -94,7 +95,7 @@ public sealed class GcraRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new GcraRateLimiter(clock);
+        var limiter = new GcraRateLimiter(new InMemoryGcraStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 1,
             window: TimeSpan.FromSeconds(1));
@@ -119,7 +120,7 @@ public sealed class GcraRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new GcraRateLimiter(clock);
+        var limiter = new GcraRateLimiter(new InMemoryGcraStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 5,
             window: TimeSpan.FromSeconds(5));
@@ -138,7 +139,7 @@ public sealed class GcraRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new GcraRateLimiter(clock);
+        var limiter = new GcraRateLimiter(new InMemoryGcraStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 5,
             window: TimeSpan.FromSeconds(5));
@@ -158,7 +159,7 @@ public sealed class GcraRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new GcraRateLimiter(clock);
+        var limiter = new GcraRateLimiter(new InMemoryGcraStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 100,
             window: TimeSpan.FromSeconds(100));
@@ -183,7 +184,7 @@ public sealed class GcraRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new GcraRateLimiter(clock);
+        var limiter = new GcraRateLimiter(new InMemoryGcraStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 2,
             window: TimeSpan.FromSeconds(2));
@@ -206,3 +207,4 @@ public sealed class GcraRateLimiterTests
         Assert.True(decision.Allowed);
     }
 }
+
