@@ -27,6 +27,7 @@
     <ProjectReference Include="..\..\src\RateLimitEngine.Algorithms\RateLimitEngine.Algorithms.csproj" />
     <ProjectReference Include="..\RateLimitEngine.Testing\RateLimitEngine.Testing.csproj" />
     <ProjectReference Include="..\..\src\RateLimitEngine.Redis\RateLimitEngine.Redis.csproj" />
+    <ProjectReference Include="..\..\src\RateLimitEngine.AspNetCore\RateLimitEngine.AspNetCore.csproj" />
   </ItemGroup>
 
 </Project>

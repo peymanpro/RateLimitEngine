@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,13 +19,16 @@ public static class RateLimitMiddlewareExtensions
 
         configure?.Invoke(options);
 
-        Validate(options);
+        options.Validate();
 
         services.AddSingleton(options);
+
         services.AddSingleton<IRateLimitKeyResolver,
             RemoteIpRateLimitKeyResolver>();
+
         services.AddSingleton<IRateLimiterFactoryProvider,
             RateLimiterFactoryProvider>();
+
         services.AddSingleton<IRateLimiterFactory,
             ConfigurableRateLimiterFactory>();
 
@@ -65,42 +69,41 @@ public static class RateLimitMiddlewareExtensions
                 $"Unsupported rate limit algorithm '{algorithmName}'.");
         }
 
-        var permitLimit = ParsePositiveInt(
-            section["PermitLimit"],
-            100,
-            "PermitLimit");
-
-        var windowSeconds = ParsePositiveDouble(
-            section["WindowSeconds"],
-            60,
-            "WindowSeconds");
-
-        var cost = ParsePositiveInt(
-            section["Cost"],
-            1,
-            "Cost");
-
         var options = new RateLimitOptions
         {
             Backend = backend,
             Algorithm = algorithm,
-            PermitLimit = permitLimit,
-            Window = TimeSpan.FromSeconds(windowSeconds),
-            Cost = cost
+            PermitLimit = ParsePositiveInt(
+                section["PermitLimit"],
+                100,
+                "PermitLimit"),
+            Window = TimeSpan.FromSeconds(
+                ParsePositiveDouble(
+                    section["WindowSeconds"],
+                    60,
+                    "WindowSeconds")),
+            Cost = ParsePositiveInt(
+                section["Cost"],
+                1,
+                "Cost")
         };
 
-        Validate(options);
+        options.Validate();
 
         services.AddSingleton(options);
+
         services.AddSingleton<IRateLimitKeyResolver,
             RemoteIpRateLimitKeyResolver>();
+
         services.AddSingleton<IRateLimiterFactoryProvider,
             RateLimiterFactoryProvider>();
+
         services.AddSingleton<IRateLimiterFactory,
             ConfigurableRateLimiterFactory>();
 
         return services;
     }
+
     public static IApplicationBuilder UseRateLimitEngine(
         this IApplicationBuilder app)
     {
@@ -119,7 +122,11 @@ public static class RateLimitMiddlewareExtensions
             return defaultValue;
         }
 
-        if (!int.TryParse(value, out var parsed) ||
+        if (!int.TryParse(
+                value,
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var parsed) ||
             parsed <= 0)
         {
             throw new InvalidOperationException(
@@ -141,8 +148,8 @@ public static class RateLimitMiddlewareExtensions
 
         if (!double.TryParse(
                 value,
-                System.Globalization.NumberStyles.Float,
-                System.Globalization.CultureInfo.InvariantCulture,
+                NumberStyles.Float,
+                CultureInfo.InvariantCulture,
                 out var parsed) ||
             parsed <= 0)
         {
@@ -152,26 +159,4 @@ public static class RateLimitMiddlewareExtensions
 
         return parsed;
     }
-
-    private static void Validate(RateLimitOptions options)
-    {
-        if (options.PermitLimit <= 0)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(options.PermitLimit));
-        }
-
-        if (options.Window <= TimeSpan.Zero)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(options.Window));
-        }
-
-        if (options.Cost <= 0)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(options.Cost));
-        }
-    }
 }
-
