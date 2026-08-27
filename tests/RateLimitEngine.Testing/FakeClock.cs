@@ -1,8 +1,8 @@
 using RateLimitEngine.Core.Time;
 
-namespace RateLimitEngine.UnitTests;
+namespace RateLimitEngine.Testing;
 
-internal sealed class FakeClock : IClock
+public sealed class FakeClock : IClock
 {
     private DateTimeOffset _utcNow;
 
