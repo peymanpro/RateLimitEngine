@@ -12,7 +12,7 @@ public sealed class FixedWindowRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new FixedWindowRateLimiter(clock, new InMemoryFixedWindowStore(clock));
+        var limiter = new FixedWindowRateLimiter(new InMemoryFixedWindowStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 3,
             window: TimeSpan.FromMinutes(1));
@@ -42,7 +42,7 @@ public sealed class FixedWindowRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new FixedWindowRateLimiter(clock, new InMemoryFixedWindowStore(clock));
+        var limiter = new FixedWindowRateLimiter(new InMemoryFixedWindowStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 2,
             window: TimeSpan.FromMinutes(1));
@@ -72,7 +72,7 @@ public sealed class FixedWindowRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new FixedWindowRateLimiter(clock, new InMemoryFixedWindowStore(clock));
+        var limiter = new FixedWindowRateLimiter(new InMemoryFixedWindowStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 1,
             window: TimeSpan.FromMinutes(1));
@@ -102,7 +102,7 @@ public sealed class FixedWindowRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new FixedWindowRateLimiter(clock, new InMemoryFixedWindowStore(clock));
+        var limiter = new FixedWindowRateLimiter(new InMemoryFixedWindowStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 1,
             window: TimeSpan.FromMinutes(1));
@@ -127,7 +127,7 @@ public sealed class FixedWindowRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new FixedWindowRateLimiter(clock, new InMemoryFixedWindowStore(clock));
+        var limiter = new FixedWindowRateLimiter(new InMemoryFixedWindowStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 5,
             window: TimeSpan.FromMinutes(1));
@@ -147,7 +147,7 @@ public sealed class FixedWindowRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new FixedWindowRateLimiter(clock, new InMemoryFixedWindowStore(clock));
+        var limiter = new FixedWindowRateLimiter(new InMemoryFixedWindowStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 5,
             window: TimeSpan.FromMinutes(1));
@@ -171,7 +171,7 @@ public sealed class FixedWindowRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new FixedWindowRateLimiter(clock, new InMemoryFixedWindowStore(clock));
+        var limiter = new FixedWindowRateLimiter(new InMemoryFixedWindowStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 5,
             window: TimeSpan.FromMinutes(1));
@@ -191,7 +191,7 @@ public sealed class FixedWindowRateLimiterTests
         var clock = new FakeClock(
             new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
 
-        var limiter = new FixedWindowRateLimiter(clock, new InMemoryFixedWindowStore(clock));
+        var limiter = new FixedWindowRateLimiter(new InMemoryFixedWindowStore(clock));
         var policy = new RateLimitPolicy(
             permitLimit: 100,
             window: TimeSpan.FromMinutes(1));
@@ -216,5 +216,6 @@ public sealed class FixedWindowRateLimiterTests
                 policy.PermitLimit));
     }
 }
+
 
 
