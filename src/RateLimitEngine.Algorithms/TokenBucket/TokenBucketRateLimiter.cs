@@ -34,7 +34,7 @@ public sealed class TokenBucketRateLimiter : IRateLimiter
 
         var result = await _store.ConsumeAsync(
             request.Key,
-            capacity: _options.Capacity,
+            _options.Capacity,
             refillRate,
             request.Cost,
             cancellationToken);
