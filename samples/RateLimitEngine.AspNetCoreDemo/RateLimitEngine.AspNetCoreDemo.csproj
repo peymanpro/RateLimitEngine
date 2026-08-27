@@ -8,11 +8,13 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.29" />
+    <PackageReference Include="StackExchange.Redis" Version="3.1.31" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\RateLimitEngine.AspNetCore\RateLimitEngine.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\src\RateLimitEngine.Redis\RateLimitEngine.Redis.csproj" />
   </ItemGroup>
 
 </Project>
