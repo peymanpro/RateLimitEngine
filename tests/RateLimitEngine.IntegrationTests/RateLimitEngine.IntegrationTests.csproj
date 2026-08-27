@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.26" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="StackExchange.Redis" Version="3.1.31" />
     <PackageReference Include="xunit" Version="2.5.3" />
@@ -25,6 +26,8 @@
     <ProjectReference Include="..\..\src\RateLimitEngine.Core\RateLimitEngine.Core.csproj" />
     <ProjectReference Include="..\..\src\RateLimitEngine.Algorithms\RateLimitEngine.Algorithms.csproj" />
     <ProjectReference Include="..\..\src\RateLimitEngine.Redis\RateLimitEngine.Redis.csproj" />
+    <ProjectReference Include="..\..\src\RateLimitEngine.AspNetCore\RateLimitEngine.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\samples\RateLimitEngine.AspNetCoreDemo\RateLimitEngine.AspNetCoreDemo.csproj" />
   </ItemGroup>
 
 </Project>
