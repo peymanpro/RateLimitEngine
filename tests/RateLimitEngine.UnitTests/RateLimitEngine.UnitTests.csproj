@@ -23,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\RateLimitEngine.Core\RateLimitEngine.Core.csproj" />
     <ProjectReference Include="..\..\src\RateLimitEngine.Algorithms\RateLimitEngine.Algorithms.csproj" />
+    <ProjectReference Include="..\RateLimitEngine.Testing\RateLimitEngine.Testing.csproj" />
   </ItemGroup>
 
 </Project>
