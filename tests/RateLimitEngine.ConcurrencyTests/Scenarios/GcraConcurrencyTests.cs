@@ -1,5 +1,6 @@
 using RateLimitEngine.Algorithms.Gcra;
 using RateLimitEngine.Core.Models;
+using RateLimitEngine.Algorithms.InMemory;
 using RateLimitEngine.Testing;
 
 namespace RateLimitEngine.ConcurrencyTests.Scenarios;
@@ -19,7 +20,7 @@ public sealed class GcraConcurrencyTests
                 0,
                 TimeSpan.Zero));
 
-        var limiter = new GcraRateLimiter(clock);
+        var limiter = new GcraRateLimiter(new InMemoryGcraStore(clock));
 
         var policy = new RateLimitPolicy(
             permitLimit: 100,
@@ -44,3 +45,4 @@ public sealed class GcraConcurrencyTests
             decisions.Count(static decision => !decision.Allowed));
     }
 }
+

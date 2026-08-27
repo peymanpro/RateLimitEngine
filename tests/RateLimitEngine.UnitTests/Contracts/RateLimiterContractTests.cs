@@ -39,7 +39,7 @@ public sealed class RateLimiterContractTests
         [
             "gcra",
             new Func<IClock, IRateLimiter>(clock =>
-                new GcraRateLimiter(clock))
+                new GcraRateLimiter(new InMemoryGcraStore(clock)))
         ];
     }
 
@@ -125,6 +125,7 @@ public sealed class RateLimiterContractTests
             permitLimit: 5,
             window: TimeSpan.FromSeconds(5));
 }
+
 
 
 
