@@ -34,7 +34,7 @@ public sealed class InMemoryRateLimiterFactoryTests
     }
 
     [Fact]
-    public void Create_ShouldCreateIndependentLimiterInstances()
+    public void Create_ShouldReuseStatefulLimiterInstance()
     {
         var clock = new FakeClock(
             new DateTimeOffset(
@@ -55,7 +55,7 @@ public sealed class InMemoryRateLimiterFactoryTests
         var second =
             factory.Create(RateLimitAlgorithm.FixedWindow);
 
-        Assert.NotSame(first, second);
+        Assert.Same(first, second);
     }
 
     [Fact]
@@ -82,3 +82,4 @@ public sealed class InMemoryRateLimiterFactoryTests
                 options));
     }
 }
+
