@@ -9,7 +9,7 @@ public sealed class TokenBucketRateLimiter : IRateLimiter
 {
     private readonly IClock _clock;
     private readonly TokenBucketOptions _options;
-    private readonly ConcurrentDictionary<string, BucketState> _states = new();
+    private readonly ConcurrentDictionary<RateLimitStateKey, BucketState> _states = new();
 
     public TokenBucketRateLimiter(
         IClock clock,
@@ -34,8 +34,13 @@ public sealed class TokenBucketRateLimiter : IRateLimiter
 
         var refillRate = policy.PermitLimit / policy.Window.TotalSeconds;
 
-        var state = _states.GetOrAdd(
+        var stateKey = new RateLimitStateKey(
             request.Key,
+            policy.PermitLimit,
+            policy.Window);
+
+        var state = _states.GetOrAdd(
+            stateKey,
             _ => new BucketState(
                 _options.Capacity,
                 _clock.GetTimestamp()));
