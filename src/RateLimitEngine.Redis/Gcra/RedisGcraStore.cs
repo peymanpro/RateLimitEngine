@@ -74,19 +74,17 @@ redis.call(
 
 local remaining = 0
 
-if newTat > nowMilliseconds then
-    local availableMilliseconds =
-        burstToleranceMilliseconds -
-        (newTat - nowMilliseconds)
+local leadTime =
+    newTat - nowMilliseconds
 
-    if availableMilliseconds > 0 then
-        remaining =
-            math.floor(
-                availableMilliseconds /
-                intervalMilliseconds) + 1
-    elseif availableMilliseconds == 0 then
-        remaining = 1
-    end
+local availableBurst =
+    burstToleranceMilliseconds - leadTime
+
+if availableBurst >= 0 then
+    remaining =
+        math.floor(
+            availableBurst /
+            intervalMilliseconds) + 1
 end
 
 return {
@@ -179,3 +177,4 @@ return {
             Remaining: remaining);
     }
 }
+
