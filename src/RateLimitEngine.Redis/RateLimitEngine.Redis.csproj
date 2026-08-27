@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RateLimitEngine.Core\RateLimitEngine.Core.csproj" />
+    <ProjectReference Include="..\RateLimitEngine.Algorithms\RateLimitEngine.Algorithms.csproj" />
   </ItemGroup>
 
   <ItemGroup>
