@@ -29,7 +29,7 @@ public sealed class DistributedExpirationTests
             $"distributed-expiration-{Guid.NewGuid():N}";
 
         const int limit = 1;
-        var window = TimeSpan.FromSeconds(1);
+        var window = TimeSpan.FromSeconds(5);
 
         var first = await storeA.IncrementAsync(
             key,

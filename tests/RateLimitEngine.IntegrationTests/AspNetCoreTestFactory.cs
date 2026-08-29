@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using RateLimitEngine.Algorithms;
+using RateLimitEngine.AspNetCore;
+using RateLimitEngine.Core.Models;
+using RateLimitEngine.Core.Time;
 
 namespace RateLimitEngine.IntegrationTests;
 
@@ -19,17 +23,38 @@ public sealed class AspNetCoreTestFactory
         builder.ConfigureServices(
             services =>
             {
-                services.RemoveAll<
-                    RateLimitEngine.AspNetCore.IRateLimitKeyResolver>();
+                services.RemoveAll<IClock>();
+                services.RemoveAll<IRateLimitKeyResolver>();
+                services.RemoveAll<RateLimitOptions>();
 
-                services.AddSingleton<
-                    RateLimitEngine.AspNetCore.IRateLimitKeyResolver>(
+                services.AddSingleton<IClock, SystemClock>();
+
+                services.AddRateLimitEngineInMemory();
+
+                services.AddSingleton(
+                    new RateLimitOptions
+                    {
+                        Backend =
+                            RateLimitBackend.InMemory,
+
+                        Algorithm =
+                            RateLimitAlgorithm.FixedWindow,
+
+                        FailureStrategy =
+                            RateLimitFailureStrategy.FailOpen,
+
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromSeconds(10),
+                        Cost = 1
+                    });
+
+                services.AddSingleton<IRateLimitKeyResolver>(
                     new TestRateLimitKeyResolver(_testKey));
             });
     }
 
     private sealed class TestRateLimitKeyResolver
-        : RateLimitEngine.AspNetCore.IRateLimitKeyResolver
+        : IRateLimitKeyResolver
     {
         private readonly string _key;
 
