@@ -20,4 +20,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\RateLimitEngine.Core\RateLimitEngine.Core.csproj" />
+    <ProjectReference Include="..\..\src\RateLimitEngine.Redis\RateLimitEngine.Redis.csproj" />
+  </ItemGroup>
+
 </Project>
