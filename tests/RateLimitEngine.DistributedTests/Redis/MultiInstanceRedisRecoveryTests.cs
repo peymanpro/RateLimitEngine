@@ -5,34 +5,42 @@ using StackExchange.Redis;
 namespace RateLimitEngine.DistributedTests.Redis;
 
 [Collection("Redis Docker Collection")]
-public sealed class RedisRecoveryTests
+public sealed class MultiInstanceRedisRecoveryTests
 {
     private readonly RedisDockerFixture _redis;
 
-    public RedisRecoveryTests(
+    public MultiInstanceRedisRecoveryTests(
         RedisDockerFixture redis)
     {
         _redis = redis;
     }
 
     [Fact]
-    public async Task SameRedisConnection_ShouldRecoverAfterRedisRestart()
+    public async Task TwoIndependentConnections_ShouldBothRecoverAfterRedisRestart()
     {
-        await using var connection =
+        await using var connectionA =
             await ConnectionMultiplexer.ConnectAsync(
                 _redis.ConnectionString);
 
-        var store = new RedisFixedWindowStore(
+        await using var connectionB =
+            await ConnectionMultiplexer.ConnectAsync(
+                _redis.ConnectionString);
+
+        var storeA = new RedisFixedWindowStore(
             new RedisScriptExecutor(
-                connection.GetDatabase()));
+                connectionA.GetDatabase()));
+
+        var storeB = new RedisFixedWindowStore(
+            new RedisScriptExecutor(
+                connectionB.GetDatabase()));
 
         var key =
-            $"redis-recovery-{Guid.NewGuid():N}";
+            $"multi-instance-recovery-{Guid.NewGuid():N}";
 
-        const int limit = 2;
+        const int limit = 4;
         var window = TimeSpan.FromSeconds(30);
 
-        var first = await store.IncrementAsync(
+        var first = await storeA.IncrementAsync(
             key,
             window,
             limit,
@@ -40,19 +48,9 @@ public sealed class RedisRecoveryTests
 
         Assert.True(first.Accepted);
         Assert.Equal(1, first.Consumed);
-        Assert.Equal(1, first.Remaining);
+        Assert.Equal(3, first.Remaining);
 
-        await _redis.StopAsync();
-
-        await AssertEventuallyRedisOperationFailsAsync(
-            connection);
-
-        await _redis.StartAsync();
-
-        await AssertEventuallyRedisOperationSucceedsAsync(
-            connection);
-
-        var second = await store.IncrementAsync(
+        var second = await storeB.IncrementAsync(
             key,
             window,
             limit,
@@ -60,7 +58,53 @@ public sealed class RedisRecoveryTests
 
         Assert.True(second.Accepted);
         Assert.Equal(2, second.Consumed);
-        Assert.Equal(0, second.Remaining);
+        Assert.Equal(2, second.Remaining);
+
+        await _redis.StopAsync();
+
+        await AssertEventuallyRedisOperationFailsAsync(
+            connectionA);
+
+        await AssertEventuallyRedisOperationFailsAsync(
+            connectionB);
+
+        await _redis.StartAsync();
+
+        await AssertEventuallyRedisOperationSucceedsAsync(
+            connectionA);
+
+        await AssertEventuallyRedisOperationSucceedsAsync(
+            connectionB);
+
+        var third = await storeA.IncrementAsync(
+            key,
+            window,
+            limit,
+            cost: 1);
+
+        Assert.True(third.Accepted);
+        Assert.Equal(3, third.Consumed);
+        Assert.Equal(1, third.Remaining);
+
+        var fourth = await storeB.IncrementAsync(
+            key,
+            window,
+            limit,
+            cost: 1);
+
+        Assert.True(fourth.Accepted);
+        Assert.Equal(4, fourth.Consumed);
+        Assert.Equal(0, fourth.Remaining);
+
+        var fifth = await storeA.IncrementAsync(
+            key,
+            window,
+            limit,
+            cost: 1);
+
+        Assert.False(fifth.Accepted);
+        Assert.Equal(4, fifth.Consumed);
+        Assert.Equal(0, fifth.Remaining);
     }
 
     private static async Task
@@ -107,13 +151,13 @@ public sealed class RedisRecoveryTests
 
                 return;
             }
-            catch
+            catch (RedisException)
             {
                 await Task.Delay(100);
             }
         }
 
         throw new Xunit.Sdk.XunitException(
-            "The same Redis connection did not recover after restart.");
+            "Redis connection did not recover after restart.");
     }
 }
