@@ -85,6 +85,7 @@ public static class RateLimitMiddlewareExtensions
         {
             Backend = backend,
             Algorithm = algorithm,
+            FailureStrategy = failureStrategy,
             PermitLimit = ParsePositiveInt(
                 section["PermitLimit"],
                 100,
@@ -172,4 +173,3 @@ public static class RateLimitMiddlewareExtensions
         return parsed;
     }
 }
-
