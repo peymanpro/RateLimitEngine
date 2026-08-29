@@ -1,7 +1,9 @@
 using StackExchange.Redis;
+using Xunit;
 
 namespace RateLimitEngine.IntegrationTests.Redis;
 
+[Collection("Redis Timeout Collection")]
 public sealed class RedisTimeoutTests
 {
     private static async Task PauseRedisAsync(
@@ -24,7 +26,7 @@ public sealed class RedisTimeoutTests
     {
         var configuration =
             ConfigurationOptions.Parse(
-                "localhost:6379");
+                "localhost:6382");
 
         configuration.AbortOnConnectFail = false;
         configuration.ConnectTimeout = 1000;
@@ -41,7 +43,7 @@ public sealed class RedisTimeoutTests
     {
         var configuration =
             ConfigurationOptions.Parse(
-                "localhost:6379");
+                "localhost:6382");
 
         configuration.AbortOnConnectFail = false;
         configuration.ConnectTimeout = 1000;
@@ -61,8 +63,9 @@ public sealed class RedisTimeoutTests
         await using var connection =
             await CreateTimeoutConnectionAsync();
 
-        var database =
-            connection.GetDatabase();
+        await connection
+            .GetDatabase()
+            .PingAsync();
 
         await PauseRedisAsync(
             blocker,
@@ -71,8 +74,10 @@ public sealed class RedisTimeoutTests
         var exception =
             await Assert.ThrowsAsync<RedisTimeoutException>(
                 async () =>
-                    await database.ScriptEvaluateAsync(
-                        "return 1"));
+                    await connection
+                        .GetDatabase()
+                        .ScriptEvaluateAsync(
+                            "return 1"));
 
         Assert.Contains(
             "Timeout",

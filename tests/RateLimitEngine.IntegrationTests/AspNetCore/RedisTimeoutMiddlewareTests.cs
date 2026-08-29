@@ -1,8 +1,10 @@
 using System.Net;
 using StackExchange.Redis;
+using Xunit;
 
 namespace RateLimitEngine.IntegrationTests.AspNetCore;
 
+[Collection("Redis Timeout Collection")]
 public sealed class RedisTimeoutMiddlewareTests
 {
     private static async Task PauseRedisAsync(
@@ -25,7 +27,7 @@ public sealed class RedisTimeoutMiddlewareTests
     {
         var configuration =
             ConfigurationOptions.Parse(
-                "localhost:6379");
+                "localhost:6382");
 
         configuration.AbortOnConnectFail = false;
         configuration.ConnectTimeout = 1000;
