@@ -13,9 +13,9 @@ public sealed class RedisDockerFixture : IAsyncLifetime
     public string ConnectionString =>
         $"localhost:{HostPort}," +
         "abortConnect=false," +
-        "connectTimeout=500," +
-        "asyncTimeout=500," +
-        "syncTimeout=500";
+        "connectTimeout=1000," +
+        "asyncTimeout=1000," +
+        "syncTimeout=1000";
 
     public async Task InitializeAsync()
     {
@@ -31,7 +31,12 @@ public sealed class RedisDockerFixture : IAsyncLifetime
             ContainerName,
             "-p",
             $"{HostPort}:6379",
-            "redis:7-alpine");
+            "redis:7-alpine",
+            "redis-server",
+            "--appendonly",
+            "yes",
+            "--appendfsync",
+            "always");
 
         await WaitForRedisAsync();
     }

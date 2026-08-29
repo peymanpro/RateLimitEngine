@@ -30,7 +30,7 @@ public sealed class RedisRecoveryTests
             $"redis-recovery-{Guid.NewGuid():N}";
 
         const int limit = 2;
-        var window = TimeSpan.FromSeconds(30);
+        var window = TimeSpan.FromHours(1);
 
         var first = await store.IncrementAsync(
             key,

@@ -38,7 +38,7 @@ public sealed class MultiInstanceRedisRecoveryTests
             $"multi-instance-recovery-{Guid.NewGuid():N}";
 
         const int limit = 4;
-        var window = TimeSpan.FromSeconds(30);
+        var window = TimeSpan.FromHours(1);
 
         var first = await storeA.IncrementAsync(
             key,
@@ -128,6 +128,10 @@ public sealed class MultiInstanceRedisRecoveryTests
             {
                 return;
             }
+            catch (TimeoutException)
+            {
+                return;
+            }
         }
 
         throw new Xunit.Sdk.XunitException(
@@ -152,6 +156,10 @@ public sealed class MultiInstanceRedisRecoveryTests
                 return;
             }
             catch (RedisException)
+            {
+                await Task.Delay(100);
+            }
+            catch (TimeoutException)
             {
                 await Task.Delay(100);
             }

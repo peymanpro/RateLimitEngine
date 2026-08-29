@@ -104,7 +104,7 @@ public sealed class RedisTokenBucketStoreTests
                 store.ConsumeAsync(
                     key,
                     capacity: 100,
-                    refillRate: 1,
+                    refillRate: 0.000001,
                     cost: 1)
                     .AsTask())
             .ToArray();
