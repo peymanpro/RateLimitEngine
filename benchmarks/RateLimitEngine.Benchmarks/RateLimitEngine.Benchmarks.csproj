@@ -7,4 +7,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\RateLimitEngine.Core\RateLimitEngine.Core.csproj" />
+    <ProjectReference Include="..\..\src\RateLimitEngine.Algorithms\RateLimitEngine.Algorithms.csproj" />
+  </ItemGroup>
+
 </Project>
