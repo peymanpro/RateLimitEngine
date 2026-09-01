@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using RateLimitEngine.Core.Abstractions;
 using RateLimitEngine.Core.Models;
@@ -256,6 +257,127 @@ public sealed class InstrumentedRateLimiterTests
                         TimeSpan.FromMinutes(1))));
 
         Assert.Equal(0, failures);
+    }
+    [Fact]
+    public async Task EvaluateAsync_ShouldCreateActivityWithDecisionTags()
+    {
+        Activity? stoppedActivity = null;
+
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source =>
+                source.Name ==
+                RateLimitEngineDiagnostics.ActivitySourceName,
+
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) =>
+                ActivitySamplingResult.AllData,
+
+            ActivityStopped = activity =>
+            {
+                stoppedActivity = activity;
+            }
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var instrumented =
+            new InstrumentedRateLimiter(
+                new StubRateLimiter(
+                    new RateLimitDecision(
+                        allowed: true,
+                        limit: 10,
+                        remaining: 9)),
+                RateLimitAlgorithm.FixedWindow,
+                RateLimitBackend.InMemory);
+
+        await instrumented.EvaluateAsync(
+            new RateLimitRequest("client-1"),
+            new RateLimitPolicy(
+                10,
+                TimeSpan.FromMinutes(1)));
+
+        Assert.NotNull(stoppedActivity);
+        Assert.Equal(
+            "RateLimitEngine.Evaluate",
+            stoppedActivity!.OperationName);
+
+        Assert.Equal(
+            "FixedWindow",
+            stoppedActivity.GetTagItem("rate_limit.algorithm"));
+
+        Assert.Equal(
+            "InMemory",
+            stoppedActivity.GetTagItem("rate_limit.backend"));
+
+        Assert.Equal(
+            true,
+            stoppedActivity.GetTagItem("rate_limit.allowed"));
+
+        listener.Dispose();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_ShouldRecordExceptionEventAndErrorStatus()
+    {
+        Activity? stoppedActivity = null;
+
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source =>
+                source.Name ==
+                RateLimitEngineDiagnostics.ActivitySourceName,
+
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) =>
+                ActivitySamplingResult.AllData,
+
+            ActivityStopped = activity =>
+            {
+                stoppedActivity = activity;
+            }
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var exception =
+            new InvalidOperationException(
+                "evaluation failure");
+
+        var instrumented =
+            new InstrumentedRateLimiter(
+                new ThrowingRateLimiter(exception),
+                RateLimitAlgorithm.Gcra,
+                RateLimitBackend.Redis);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            async () =>
+                await instrumented.EvaluateAsync(
+                    new RateLimitRequest("client-1"),
+                    new RateLimitPolicy(
+                        10,
+                        TimeSpan.FromMinutes(1))));
+
+        Assert.NotNull(stoppedActivity);
+        Assert.Equal(
+            ActivityStatusCode.Error,
+            stoppedActivity!.Status);
+
+        var exceptionEvent =
+            Assert.Single(
+                stoppedActivity.Events,
+                activityEvent =>
+                    activityEvent.Name == "exception");
+
+        Assert.Equal(
+            "System.InvalidOperationException",
+            exceptionEvent.Tags.First(
+                tag => tag.Key == "exception.type").Value);
+
+        Assert.Equal(
+            "evaluation failure",
+            exceptionEvent.Tags.First(
+                tag => tag.Key == "exception.message").Value);
+
+        listener.Dispose();
     }
     private sealed class StubRateLimiter : IRateLimiter
     {

@@ -29,6 +29,18 @@ public sealed class InstrumentedRateLimiter : IRateLimiter
     {
         var stopwatch = Stopwatch.StartNew();
 
+        using var activity =
+            RateLimitEngineDiagnostics.ActivitySource.StartActivity(
+                "RateLimitEngine.Evaluate");
+
+        activity?.SetTag(
+            "rate_limit.algorithm",
+            _algorithm);
+
+        activity?.SetTag(
+            "rate_limit.backend",
+            _backend);
+
         try
         {
             var decision =
@@ -47,12 +59,20 @@ public sealed class InstrumentedRateLimiter : IRateLimiter
                 RateLimitEngineMetrics.AllowedRequests.Add(
                     1,
                     tags);
+
+                activity?.SetTag(
+                    "rate_limit.allowed",
+                    true);
             }
             else
             {
                 RateLimitEngineMetrics.RejectedRequests.Add(
                     1,
                     tags);
+
+                activity?.SetTag(
+                    "rate_limit.allowed",
+                    false);
             }
 
             return decision;
@@ -69,6 +89,19 @@ public sealed class InstrumentedRateLimiter : IRateLimiter
                     _algorithm,
                     _backend,
                     exception));
+
+            activity?.SetStatus(
+                ActivityStatusCode.Error,
+                exception.Message);
+
+            activity?.AddEvent(
+                new ActivityEvent(
+                    "exception",
+                    tags: new ActivityTagsCollection
+                    {
+                        { "exception.type", exception.GetType().FullName },
+                        { "exception.message", exception.Message }
+                    }));
 
             throw;
         }
