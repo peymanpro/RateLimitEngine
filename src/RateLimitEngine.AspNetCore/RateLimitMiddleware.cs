@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using RateLimitEngine.Core.Abstractions;
 using RateLimitEngine.Core.Models;
 
@@ -10,12 +12,14 @@ public sealed class RateLimitMiddleware
     private readonly IRateLimiterFactory _factory;
     private readonly IRateLimitKeyResolver _keyResolver;
     private readonly RateLimitOptions _options;
+    private readonly ILogger<RateLimitMiddleware> _logger;
 
     public RateLimitMiddleware(
         RequestDelegate next,
         IRateLimiterFactory factory,
         IRateLimitKeyResolver keyResolver,
-        RateLimitOptions options)
+        RateLimitOptions options,
+        ILogger<RateLimitMiddleware>? logger = null)
     {
         ArgumentNullException.ThrowIfNull(next);
         ArgumentNullException.ThrowIfNull(factory);
@@ -26,6 +30,7 @@ public sealed class RateLimitMiddleware
         _factory = factory;
         _keyResolver = keyResolver;
         _options = options;
+        _logger = logger ?? NullLogger<RateLimitMiddleware>.Instance;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -58,14 +63,26 @@ public sealed class RateLimitMiddleware
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
             if (_options.FailureStrategy ==
                 RateLimitFailureStrategy.FailOpen)
             {
+                _logger.LogError(
+                    exception,
+                    "Rate limit evaluation failed. Failing open. Algorithm={Algorithm}, Backend={Backend}",
+                    _options.Algorithm,
+                    _options.Backend);
+
                 await _next(context);
                 return;
             }
+
+            _logger.LogError(
+                exception,
+                "Rate limit evaluation failed. Failing closed. Algorithm={Algorithm}, Backend={Backend}",
+                _options.Algorithm,
+                _options.Backend);
 
             context.Response.StatusCode =
                 StatusCodes.Status503ServiceUnavailable;
@@ -77,6 +94,12 @@ public sealed class RateLimitMiddleware
 
         if (!decision.Allowed)
         {
+            _logger.LogWarning(
+                "Rate limit rejected request. Algorithm={Algorithm}, Backend={Backend}, Remaining={Remaining}",
+                _options.Algorithm,
+                _options.Backend,
+                decision.Remaining);
+
             context.Response.StatusCode =
                 StatusCodes.Status429TooManyRequests;
 
