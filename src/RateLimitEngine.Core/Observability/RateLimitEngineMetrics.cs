@@ -22,6 +22,12 @@ public static class RateLimitEngineMetrics
             unit: "{request}",
             description: "Rate-limit requests rejected by the engine.");
 
+    public static readonly Counter<long> EvaluationFailures =
+        Meter.CreateCounter<long>(
+            "ratelimit.evaluation.failures",
+            unit: "{exception}",
+            description: "Rate-limit evaluations that failed with an exception.");
+
     public static readonly Histogram<double> EvaluationDuration =
         Meter.CreateHistogram<double>(
             "ratelimit.evaluation.duration",
@@ -42,5 +48,22 @@ public static class RateLimitEngineMetrics
 
         return tags;
     }
-}
 
+    public static TagList CreateFailureTags(
+        string algorithm,
+        string backend,
+        Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        var tags = CreateTags(
+            algorithm,
+            backend);
+
+        tags.Add(
+            "exception.type",
+            exception.GetType().FullName);
+
+        return tags;
+    }
+}
