@@ -28,6 +28,11 @@ public static class RateLimitEngineMetrics
             unit: "{exception}",
             description: "Rate-limit evaluations that failed with an exception.");
 
+    public static readonly Counter<long> RedisRetryAttempts =
+        Meter.CreateCounter<long>(
+            "ratelimit.redis.retry.attempts",
+            unit: "{attempt}",
+            description: "Redis infrastructure retry attempts.");
     public static readonly Histogram<double> EvaluationDuration =
         Meter.CreateHistogram<double>(
             "ratelimit.evaluation.duration",

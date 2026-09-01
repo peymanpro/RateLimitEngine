@@ -1,4 +1,5 @@
 using StackExchange.Redis;
+using RateLimitEngine.Core.Observability;
 
 namespace RateLimitEngine.Redis.Infrastructure;
 
@@ -53,6 +54,7 @@ public sealed class RetryingRedisScriptExecutor : IRedisScriptExecutor
             catch (RedisConnectionException)
                 when (attempt < _options.MaxRetryAttempts)
             {
+                RateLimitEngineMetrics.RedisRetryAttempts.Add(1);
                 if (_options.RetryDelay > TimeSpan.Zero)
                 {
                     await Task.Delay(
