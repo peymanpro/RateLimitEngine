@@ -1,4 +1,6 @@
-using BenchmarkDotNet.Running;
+﻿using BenchmarkDotNet.Running;
 using RateLimitEngine.Benchmarks;
 
-BenchmarkRunner.Run<FixedWindowInMemoryBenchmarks>();
+BenchmarkSwitcher
+    .FromAssembly(typeof(FixedWindowInMemoryBenchmarks).Assembly)
+    .Run(args);
