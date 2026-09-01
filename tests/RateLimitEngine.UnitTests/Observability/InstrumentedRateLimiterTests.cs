@@ -138,6 +138,125 @@ public sealed class InstrumentedRateLimiterTests
         Assert.Equal(1, rejected);
     }
 
+
+    [Fact]
+    public async Task EvaluateAsync_ShouldRecordFailureWhenInnerLimiterThrows()
+    {
+        using var listener = new MeterListener();
+
+        long failures = 0;
+
+        listener.InstrumentPublished =
+            (instrument, meterListener) =>
+            {
+                if (instrument.Meter.Name ==
+                    RateLimitEngineMetrics.MeterName)
+                {
+                    meterListener.EnableMeasurementEvents(
+                        instrument);
+                }
+            };
+
+        listener.SetMeasurementEventCallback<long>(
+            (instrument, measurement, _, _) =>
+            {
+                if (instrument.Name ==
+                    "ratelimit.evaluation.failures")
+                {
+                    failures += measurement;
+                }
+            });
+
+        listener.Start();
+
+        var exception =
+            new InvalidOperationException(
+                "evaluation failure");
+
+        var instrumented =
+            new InstrumentedRateLimiter(
+                new ThrowingRateLimiter(exception),
+                RateLimitAlgorithm.FixedWindow,
+                RateLimitBackend.InMemory);
+
+        var resultException =
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                async () =>
+                    await instrumented.EvaluateAsync(
+                        new RateLimitRequest("client-1"),
+                        new RateLimitPolicy(
+                            10,
+                            TimeSpan.FromMinutes(1))));
+
+        Assert.Same(exception, resultException);
+        Assert.Equal(1, failures);
+    }
+
+    private sealed class ThrowingRateLimiter : IRateLimiter
+    {
+        private readonly Exception _exception;
+
+        public ThrowingRateLimiter(Exception exception)
+        {
+            _exception = exception;
+        }
+
+        public ValueTask<RateLimitDecision> EvaluateAsync(
+            RateLimitRequest request,
+            RateLimitPolicy policy,
+            CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromException<RateLimitDecision>(
+                _exception);
+        }
+    }
+    [Fact]
+    public async Task EvaluateAsync_ShouldNotRecordCancellationAsFailure()
+    {
+        using var listener = new MeterListener();
+
+        long failures = 0;
+
+        listener.InstrumentPublished =
+            (instrument, meterListener) =>
+            {
+                if (instrument.Meter.Name ==
+                    RateLimitEngineMetrics.MeterName)
+                {
+                    meterListener.EnableMeasurementEvents(
+                        instrument);
+                }
+            };
+
+        listener.SetMeasurementEventCallback<long>(
+            (instrument, measurement, _, _) =>
+            {
+                if (instrument.Name ==
+                    "ratelimit.evaluation.failures")
+                {
+                    failures += measurement;
+                }
+            });
+
+        listener.Start();
+
+        var instrumented =
+            new InstrumentedRateLimiter(
+                new ThrowingRateLimiter(
+                    new OperationCanceledException()),
+                RateLimitAlgorithm.FixedWindow,
+                RateLimitBackend.InMemory);
+
+        await Assert.ThrowsAsync<OperationCanceledException>(
+            async () =>
+                await instrumented.EvaluateAsync(
+                    new RateLimitRequest("client-1"),
+                    new RateLimitPolicy(
+                        10,
+                        TimeSpan.FromMinutes(1))));
+
+        Assert.Equal(0, failures);
+    }
     private sealed class StubRateLimiter : IRateLimiter
     {
         private readonly RateLimitDecision _decision;

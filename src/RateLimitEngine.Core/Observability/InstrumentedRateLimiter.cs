@@ -57,6 +57,21 @@ public sealed class InstrumentedRateLimiter : IRateLimiter
 
             return decision;
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            RateLimitEngineMetrics.EvaluationFailures.Add(
+                1,
+                RateLimitEngineMetrics.CreateFailureTags(
+                    _algorithm,
+                    _backend,
+                    exception));
+
+            throw;
+        }
         finally
         {
             stopwatch.Stop();
