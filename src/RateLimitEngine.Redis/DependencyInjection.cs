@@ -15,15 +15,24 @@ public static class DependencyInjection
     public static IServiceCollection AddRateLimitEngineRedis(
         this IServiceCollection services,
         IDatabase database,
-        TokenBucketOptions? tokenBucketOptions = null)
+        TokenBucketOptions? tokenBucketOptions = null,
+        RedisRetryOptions? retryOptions = null)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(database);
 
         services.AddSingleton(database);
 
-        services.AddSingleton<IRedisScriptExecutor,
-            RedisScriptExecutor>();
+        services.AddSingleton(
+            retryOptions ?? new RedisRetryOptions());
+
+        services.AddSingleton<RedisScriptExecutor>();
+
+        services.AddSingleton<IRedisScriptExecutor>(
+            provider =>
+                new RetryingRedisScriptExecutor(
+                    provider.GetRequiredService<RedisScriptExecutor>(),
+                    provider.GetRequiredService<RedisRetryOptions>()));
 
         services.AddSingleton<IFixedWindowStore,
             RedisFixedWindowStore>();
