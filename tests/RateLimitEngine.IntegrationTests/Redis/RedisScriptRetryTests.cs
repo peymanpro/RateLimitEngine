@@ -1,3 +1,5 @@
+using System.Diagnostics.Metrics;
+using RateLimitEngine.Core.Observability;
 using RateLimitEngine.Redis.Infrastructure;
 using StackExchange.Redis;
 
@@ -70,6 +72,69 @@ public sealed class RedisScriptRetryTests
         Assert.Equal(3, inner.CallCount);
     }
 
+    [Fact]
+    public async Task ShouldRecordRetryMetric()
+    {
+        using var listener = new MeterListener();
+
+        long retryAttempts = 0;
+
+        listener.InstrumentPublished =
+            (instrument, meterListener) =>
+            {
+                if (instrument.Meter.Name ==
+                    RateLimitEngineMetrics.MeterName)
+                {
+                    meterListener.EnableMeasurementEvents(
+                        instrument);
+                }
+            };
+
+        listener.SetMeasurementEventCallback<long>(
+            (instrument, measurement, _, _) =>
+            {
+                if (instrument.Name ==
+                    "ratelimit.redis.retry.attempts")
+                {
+                    retryAttempts += measurement;
+                }
+            });
+
+        listener.Start();
+
+        var inner =
+            new SequenceExecutor(
+                new RedisConnectionException(
+                    ConnectionFailureType.UnableToConnect,
+                    CommandFlags.None,
+                    "transient-1"),
+                new RedisConnectionException(
+                    ConnectionFailureType.UnableToConnect,
+                    CommandFlags.None,
+                    "transient-2"),
+                RedisResult.Create((RedisValue)"ok"));
+
+        var executor =
+            new RetryingRedisScriptExecutor(
+                inner,
+                new RedisRetryOptions
+                {
+                    MaxRetryAttempts = 2
+                });
+
+        var result =
+            await executor.ExecuteAsync(
+                "return 1",
+                Array.Empty<RedisKey>(),
+                Array.Empty<RedisValue>());
+
+        Assert.Equal(
+            "ok",
+            (string)result!);
+
+        Assert.Equal(2, retryAttempts);
+        Assert.Equal(3, inner.CallCount);
+    }
     [Fact]
     public async Task ShouldStopAtConfiguredRetryLimit()
     {
@@ -216,4 +281,3 @@ public sealed class RedisScriptRetryTests
         }
     }
 }
-
