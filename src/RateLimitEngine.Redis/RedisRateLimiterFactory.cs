@@ -4,6 +4,7 @@ using RateLimitEngine.Algorithms.SlidingWindow;
 using RateLimitEngine.Algorithms.TokenBucket;
 using RateLimitEngine.Core.Abstractions;
 using RateLimitEngine.Core.Models;
+using RateLimitEngine.Core.Observability;
 
 namespace RateLimitEngine.Redis;
 
@@ -41,21 +42,33 @@ public sealed class RedisRateLimiterFactory : IRateLimiterFactory
         return algorithm switch
         {
             RateLimitAlgorithm.FixedWindow =>
-                new FixedWindowRateLimiter(
-                    _fixedWindowStore),
+                new InstrumentedRateLimiter(
+                    new FixedWindowRateLimiter(
+                        _fixedWindowStore),
+                    RateLimitAlgorithm.FixedWindow,
+                    RateLimitBackend.Redis),
 
             RateLimitAlgorithm.SlidingWindow =>
-                new SlidingWindowRateLimiter(
-                    _slidingWindowStore),
+                new InstrumentedRateLimiter(
+                    new SlidingWindowRateLimiter(
+                        _slidingWindowStore),
+                    RateLimitAlgorithm.SlidingWindow,
+                    RateLimitBackend.Redis),
 
             RateLimitAlgorithm.TokenBucket =>
-                new TokenBucketRateLimiter(
-                    _tokenBucketStore,
-                    _tokenBucketOptions),
+                new InstrumentedRateLimiter(
+                    new TokenBucketRateLimiter(
+                        _tokenBucketStore,
+                        _tokenBucketOptions),
+                    RateLimitAlgorithm.TokenBucket,
+                    RateLimitBackend.Redis),
 
             RateLimitAlgorithm.Gcra =>
-                new GcraRateLimiter(
-                    _gcraStore),
+                new InstrumentedRateLimiter(
+                    new GcraRateLimiter(
+                        _gcraStore),
+                    RateLimitAlgorithm.Gcra,
+                    RateLimitBackend.Redis),
 
             _ => throw new ArgumentOutOfRangeException(
                 nameof(algorithm),

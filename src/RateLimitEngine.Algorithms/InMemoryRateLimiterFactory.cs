@@ -5,6 +5,7 @@ using RateLimitEngine.Algorithms.SlidingWindow;
 using RateLimitEngine.Algorithms.TokenBucket;
 using RateLimitEngine.Core.Abstractions;
 using RateLimitEngine.Core.Models;
+using RateLimitEngine.Core.Observability;
 using RateLimitEngine.Core.Time;
 
 namespace RateLimitEngine.Algorithms;
@@ -32,22 +33,34 @@ public sealed class InMemoryRateLimiterFactory : IRateLimiterFactory
         }
 
         _fixedWindow =
-            new FixedWindowRateLimiter(
-                new InMemoryFixedWindowStore(clock));
+            new InstrumentedRateLimiter(
+                new FixedWindowRateLimiter(
+                    new InMemoryFixedWindowStore(clock)),
+                RateLimitAlgorithm.FixedWindow,
+                RateLimitBackend.InMemory);
 
         _slidingWindow =
-            new SlidingWindowRateLimiter(
-                new InMemorySlidingWindowStore(clock));
+            new InstrumentedRateLimiter(
+                new SlidingWindowRateLimiter(
+                    new InMemorySlidingWindowStore(clock)),
+                RateLimitAlgorithm.SlidingWindow,
+                RateLimitBackend.InMemory);
 
         _tokenBucket =
-            new TokenBucketRateLimiter(
-                new InMemoryTokenBucketStore(clock),
-                new TokenBucketOptions(
-                    options.TokenBucketCapacity));
+            new InstrumentedRateLimiter(
+                new TokenBucketRateLimiter(
+                    new InMemoryTokenBucketStore(clock),
+                    new TokenBucketOptions(
+                        options.TokenBucketCapacity)),
+                RateLimitAlgorithm.TokenBucket,
+                RateLimitBackend.InMemory);
 
         _gcra =
-            new GcraRateLimiter(
-                new InMemoryGcraStore(clock));
+            new InstrumentedRateLimiter(
+                new GcraRateLimiter(
+                    new InMemoryGcraStore(clock)),
+                RateLimitAlgorithm.Gcra,
+                RateLimitBackend.InMemory);
     }
 
     public IRateLimiter Create(
