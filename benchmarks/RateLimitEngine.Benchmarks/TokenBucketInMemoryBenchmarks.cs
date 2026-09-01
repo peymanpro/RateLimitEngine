@@ -2,8 +2,8 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Toolchains.InProcess.Emit;
-using RateLimitEngine.Algorithms.FixedWindow;
 using RateLimitEngine.Algorithms.InMemory;
+using RateLimitEngine.Algorithms.TokenBucket;
 using RateLimitEngine.Core.Abstractions;
 using RateLimitEngine.Core.Models;
 using RateLimitEngine.Core.Observability;
@@ -12,9 +12,9 @@ namespace RateLimitEngine.Benchmarks;
 
 [MemoryDiagnoser]
 [Config(typeof(Config))]
-public class FixedWindowInMemoryBenchmarks
+public class TokenBucketInMemoryBenchmarks
 {
-    private FixedWindowRateLimiter _rawLimiter = null!;
+    private TokenBucketRateLimiter _rawLimiter = null!;
     private IRateLimiter _instrumentedLimiter = null!;
     private RateLimitRequest _request = null!;
     private RateLimitPolicy _policy = null!;
@@ -26,13 +26,14 @@ public class FixedWindowInMemoryBenchmarks
             new RateLimitEngine.Core.Time.SystemClock();
 
         _rawLimiter =
-            new FixedWindowRateLimiter(
-                new InMemoryFixedWindowStore(clock));
+            new TokenBucketRateLimiter(
+                new InMemoryTokenBucketStore(clock),
+                new TokenBucketOptions(1_000_000_000));
 
         _instrumentedLimiter =
             new InstrumentedRateLimiter(
                 _rawLimiter,
-                RateLimitAlgorithm.FixedWindow,
+                RateLimitAlgorithm.TokenBucket,
                 RateLimitBackend.InMemory);
 
         _request =
@@ -42,7 +43,7 @@ public class FixedWindowInMemoryBenchmarks
 
         _policy =
             new RateLimitPolicy(
-                permitLimit: int.MaxValue,
+                permitLimit: 1_000_000_000,
                 window: TimeSpan.FromMinutes(1));
     }
 

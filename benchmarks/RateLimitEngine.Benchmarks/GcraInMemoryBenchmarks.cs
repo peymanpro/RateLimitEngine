@@ -1,8 +1,8 @@
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Toolchains.InProcess.Emit;
-using RateLimitEngine.Algorithms.FixedWindow;
+using RateLimitEngine.Algorithms.Gcra;
 using RateLimitEngine.Algorithms.InMemory;
 using RateLimitEngine.Core.Abstractions;
 using RateLimitEngine.Core.Models;
@@ -12,9 +12,9 @@ namespace RateLimitEngine.Benchmarks;
 
 [MemoryDiagnoser]
 [Config(typeof(Config))]
-public class FixedWindowInMemoryBenchmarks
+public class GcraInMemoryBenchmarks
 {
-    private FixedWindowRateLimiter _rawLimiter = null!;
+    private GcraRateLimiter _rawLimiter = null!;
     private IRateLimiter _instrumentedLimiter = null!;
     private RateLimitRequest _request = null!;
     private RateLimitPolicy _policy = null!;
@@ -26,13 +26,13 @@ public class FixedWindowInMemoryBenchmarks
             new RateLimitEngine.Core.Time.SystemClock();
 
         _rawLimiter =
-            new FixedWindowRateLimiter(
-                new InMemoryFixedWindowStore(clock));
+            new GcraRateLimiter(
+                new InMemoryGcraStore(clock));
 
         _instrumentedLimiter =
             new InstrumentedRateLimiter(
                 _rawLimiter,
-                RateLimitAlgorithm.FixedWindow,
+                RateLimitAlgorithm.Gcra,
                 RateLimitBackend.InMemory);
 
         _request =
@@ -42,24 +42,20 @@ public class FixedWindowInMemoryBenchmarks
 
         _policy =
             new RateLimitPolicy(
-                permitLimit: int.MaxValue,
+                permitLimit: 1_000_000,
                 window: TimeSpan.FromMinutes(1));
     }
 
     [Benchmark(Baseline = true)]
     public ValueTask<RateLimitDecision> EvaluateAsync_Raw()
     {
-        return _rawLimiter.EvaluateAsync(
-            _request,
-            _policy);
+        return _rawLimiter.EvaluateAsync(_request, _policy);
     }
 
     [Benchmark]
     public ValueTask<RateLimitDecision> EvaluateAsync_Instrumented()
     {
-        return _instrumentedLimiter.EvaluateAsync(
-            _request,
-            _policy);
+        return _instrumentedLimiter.EvaluateAsync(_request, _policy);
     }
 
     private sealed class Config : ManualConfig
