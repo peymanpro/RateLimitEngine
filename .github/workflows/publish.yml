@@ -1,0 +1,71 @@
+name: Publish NuGet Packages
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Build, Test and Publish NuGet Packages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore RateLimitEngine.sln
+
+      - name: Build
+        run: dotnet build RateLimitEngine.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test RateLimitEngine.sln --configuration Release --no-build
+
+      - name: Pack NuGet packages
+        run: |
+          mkdir -p artifacts
+
+          dotnet pack src/RateLimitEngine.Core/RateLimitEngine.Core.csproj \
+            --configuration Release \
+            --no-build \
+            --output artifacts
+
+          dotnet pack src/RateLimitEngine.Algorithms/RateLimitEngine.Algorithms.csproj \
+            --configuration Release \
+            --no-build \
+            --output artifacts
+
+          dotnet pack src/RateLimitEngine.Redis/RateLimitEngine.Redis.csproj \
+            --configuration Release \
+            --no-build \
+            --output artifacts
+
+          dotnet pack src/RateLimitEngine.AspNetCore/RateLimitEngine.AspNetCore.csproj \
+            --configuration Release \
+            --no-build \
+            --output artifacts
+
+      - name: Verify packages
+        run: |
+          ls -la artifacts
+
+          test -f artifacts/RateLimitEngine.Core.*.nupkg
+          test -f artifacts/RateLimitEngine.Algorithms.*.nupkg
+          test -f artifacts/RateLimitEngine.Redis.*.nupkg
+          test -f artifacts/RateLimitEngine.AspNetCore.*.nupkg
+
+      - name: Publish to NuGet
+        run: |
+          dotnet nuget push "artifacts/*.nupkg" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
