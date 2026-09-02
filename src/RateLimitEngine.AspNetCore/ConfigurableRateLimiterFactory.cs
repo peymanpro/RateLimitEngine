@@ -3,7 +3,7 @@ using RateLimitEngine.Core.Models;
 
 namespace RateLimitEngine.AspNetCore;
 
-public sealed class ConfigurableRateLimiterFactory : IRateLimiterFactory
+internal sealed class ConfigurableRateLimiterFactory : IRateLimiterFactory
 {
     private readonly IRateLimiterFactoryProvider _provider;
     private readonly RateLimitOptions _options;

@@ -10,7 +10,7 @@ using RateLimitEngine.Core.Time;
 
 namespace RateLimitEngine.Algorithms;
 
-public sealed class InMemoryRateLimiterFactory : IRateLimiterFactory
+internal sealed class InMemoryRateLimiterFactory : IRateLimiterFactory
 {
     private readonly IRateLimiter _fixedWindow;
     private readonly IRateLimiter _slidingWindow;

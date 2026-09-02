@@ -1,6 +1,6 @@
 namespace RateLimitEngine.Core.Time;
 
-public sealed class SystemClock : IClock
+internal sealed class SystemClock : IClock
 {
     private readonly TimeProvider _timeProvider;
 
