@@ -4,3 +4,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("RateLimitEngine.IntegrationTests")]
 [assembly: InternalsVisibleTo("RateLimitEngine.DistributedTests")]
 [assembly: InternalsVisibleTo("RateLimitEngine.Benchmarks")]
+[assembly: InternalsVisibleTo("RateLimitEngine.AspNetCore")]

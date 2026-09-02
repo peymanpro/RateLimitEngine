@@ -272,7 +272,7 @@ public interface IClock
 }
 ```
 
-The production implementation is `SystemClock`, built on .NET's `TimeProvider`.
+The built-in production clock uses .NET's `TimeProvider` through the public `IClock` abstraction.
 
 ### Request, policy, and decision models
 
@@ -316,9 +316,9 @@ ASP.NET Core adds `RateLimitFailureStrategy` with `FailOpen` and `FailClosed`.
 
 Time is a first-class dependency because every supported algorithm is time-dependent.
 
-### `IClock` and `SystemClock`
+### `IClock`
 
-In-memory algorithm stores receive an `IClock`. `SystemClock` uses .NET's `TimeProvider.System`, exposing UTC time, timestamps, and elapsed-time calculation through the common abstraction.
+In-memory algorithm stores receive an `IClock`. The built-in production implementation uses .NET's `TimeProvider.System`, exposing UTC time, timestamps, and elapsed-time calculation through the common abstraction.
 
 ### Deterministic test time
 
@@ -397,8 +397,6 @@ The main pieces are:
 - `RateLimitOptions`
 - `IRateLimitKeyResolver`
 - `RemoteIpRateLimitKeyResolver`
-- `ConfigurableRateLimiterFactory`
-- `RateLimiterFactoryProvider`
 - `RateLimitFailureStrategy`
 
 The middleware resolves a key, creates a `RateLimitRequest`, creates a `RateLimitPolicy`, evaluates the selected limiter, writes rate-limit headers, and either continues the HTTP pipeline or returns a rate-limit/failure response.
@@ -643,7 +641,7 @@ Console.WriteLine($"Allowed: {decision.Allowed}");
 Console.WriteLine($"Remaining: {decision.Remaining}");
 ```
 
-The factory keeps the algorithm instances alive for reuse, which is important for algorithms that maintain state in memory.
+The dependency-injection registration owns the backend-specific implementation and keeps in-memory algorithm instances alive for reuse.
 
 ### ASP.NET Core Example
 
@@ -956,7 +954,6 @@ Subphases:
 Subphases:
 
 - `IClock`
-- `SystemClock`
 - Deterministic test clock
 - Time-based tests
 
@@ -1450,3 +1447,4 @@ Before opening a pull request, run the relevant test projects and verify that th
 RateLimitEngine is a rate-limiting library, not a full API gateway, SaaS rate-limiting platform, authentication system, authorization system, Kubernetes operator, or multi-language SDK ecosystem.
 
 The project intentionally stays focused on rate-limiting correctness, storage coordination, ASP.NET Core integration, resilience, and testability.
+

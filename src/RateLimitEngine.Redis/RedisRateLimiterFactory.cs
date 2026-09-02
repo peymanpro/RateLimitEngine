@@ -8,7 +8,7 @@ using RateLimitEngine.Core.Observability;
 
 namespace RateLimitEngine.Redis;
 
-public sealed class RedisRateLimiterFactory : IRateLimiterFactory
+internal sealed class RedisRateLimiterFactory : IRateLimiterFactory
 {
     private readonly IFixedWindowStore _fixedWindowStore;
     private readonly ISlidingWindowStore _slidingWindowStore;

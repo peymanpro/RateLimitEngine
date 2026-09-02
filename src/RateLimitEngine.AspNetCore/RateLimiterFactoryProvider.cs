@@ -6,7 +6,7 @@ using RateLimitEngine.Redis;
 
 namespace RateLimitEngine.AspNetCore;
 
-public sealed class RateLimiterFactoryProvider : IRateLimiterFactoryProvider
+internal sealed class RateLimiterFactoryProvider : IRateLimiterFactoryProvider
 {
     private readonly IServiceProvider _services;
 

@@ -4,7 +4,7 @@ using RateLimitEngine.Core.Models;
 
 namespace RateLimitEngine.Core.Observability;
 
-public sealed class InstrumentedRateLimiter : IRateLimiter
+internal sealed class InstrumentedRateLimiter : IRateLimiter
 {
     private readonly IRateLimiter _inner;
     private readonly string _algorithm;
