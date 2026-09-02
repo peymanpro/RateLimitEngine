@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test-pack:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore RateLimitEngine.sln
+
+      - name: Build
+        run: dotnet build RateLimitEngine.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test RateLimitEngine.sln --configuration Release --no-build
+
+      - name: Pack
+        run: |
+          mkdir -p artifacts/ci
+          dotnet pack src/RateLimitEngine.Core/RateLimitEngine.Core.csproj --configuration Release --no-build --output artifacts/ci
+          dotnet pack src/RateLimitEngine.Algorithms/RateLimitEngine.Algorithms.csproj --configuration Release --no-build --output artifacts/ci
+          dotnet pack src/RateLimitEngine.Redis/RateLimitEngine.Redis.csproj --configuration Release --no-build --output artifacts/ci
+          dotnet pack src/RateLimitEngine.AspNetCore/RateLimitEngine.AspNetCore.csproj --configuration Release --no-build --output artifacts/ci
+
+      - name: Validate packages
+        shell: bash
+        run: |
+          test -f artifacts/ci/RateLimitEngine.Core.1.0.0.nupkg
+          test -f artifacts/ci/RateLimitEngine.Algorithms.1.0.0.nupkg
+          test -f artifacts/ci/RateLimitEngine.Redis.1.0.0.nupkg
+          test -f artifacts/ci/RateLimitEngine.AspNetCore.1.0.0.nupkg
