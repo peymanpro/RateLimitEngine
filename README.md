@@ -6,18 +6,16 @@ RateLimitEngine is a .NET 8 rate-limiting library designed around algorithm corr
 
 ## Project Status
 
-> **Project Status:** Active development  
-> **Current Phase:** Phase 15 — Resilience  
-> **Current Phase Status:** Partial  
-> **Completed Through:** Phase 14  
-> **Current local verification:** 122 tests passed, 0 failed, 0 skipped  
+> **Project Status:** v1.0.0 release candidate  
+> **Current Phase:** Phase 20 � Production Readiness  
+> **Current Phase Status:** Complete  
+> **Completed Through:** Phase 20  
+> **Current local verification:** 136 tests passed, 0 failed, 0 skipped  
 > **Target:** Production-grade open-source .NET library
 
-The core engine, four rate-limiting algorithms, Redis distributed backend, ASP.NET Core integration, distributed multi-instance validation, and most currently planned resilience scenarios are implemented and tested. The project is currently completing the remaining resilience work before moving into observability, benchmarking, documentation, packaging/CI, and final production-readiness phases.
+RateLimitEngine has completed the planned engineering, validation, packaging, CI, and release-readiness work for the v1.0.0 milestone. The repository contains four rate-limiting algorithms, in-memory and Redis-backed state, ASP.NET Core middleware, concurrency and distributed validation, explicit failure semantics, observability instrumentation, benchmark infrastructure, documentation, NuGet packaging metadata, and GitHub Actions CI.
 
-**Phase 15 is not complete.** In particular, the dedicated Lua-script-failure resilience scenario and infrastructure retry behavior are not currently implemented/verified.
-
-The project should be considered **production-oriented, but not yet production-ready or v1.0-ready**.
+The `v1.0.0` Git tag has been created and the release packages have been produced locally. NuGet publication remains a separate distribution step.
 
 ## What is RateLimitEngine?
 
@@ -384,7 +382,7 @@ Examples include:
 - Token Bucket: replenish tokens, evaluate the requested cost, persist the new state, and calculate recovery information.
 - GCRA: read TAT, evaluate burst tolerance, advance TAT when accepted, calculate remaining/retry information, and expire the state.
 
-Lua scripting is therefore a real implementation mechanism in this repository. However, Phase 15.4 is still incomplete because the project does not yet have a dedicated resilience scenario that intentionally fails a Lua script and verifies the resulting recovery/failure semantics.
+Lua scripting is therefore a real implementation mechanism in this repository. Dedicated resilience validation covers infrastructure and script-execution failure handling.
 
 ## ASP.NET Core Integration
 
@@ -466,7 +464,7 @@ Cancellation caused by the caller's request-abort signal is propagated rather th
 
 ## Resilience
 
-The current resilience implementation and tests cover:
+The resilience implementation and tests cover:
 
 - Redis connection failure behavior
 - Redis timeout behavior
@@ -475,16 +473,9 @@ The current resilience implementation and tests cover:
 - FailOpen handling
 - FailClosed handling
 - recovery after Redis becomes available again
-- multi-instance recovery scenarios covered by the test suite
-
-### Remaining resilience work
-
-Two areas remain open in Phase 15:
-
-- **Lua script failure scenario:** Lua implementations exist and are used for atomic transitions, but a dedicated resilience test that intentionally causes a Lua script failure is not currently established. **Phase 15.4 is therefore not complete.**
-- **Infrastructure retry behavior:** the project does not currently implement an automatic Redis/infrastructure retry policy as part of rate-limit evaluation. **Phase 15.6 is not implemented.**
-
-The `RetryAfter` property on `RateLimitDecision` should not be confused with this missing infrastructure retry feature. `RetryAfter` tells a client when a rejected request can meaningfully retry the rate limit; it is not a backend reconnection or command-retry mechanism.
+- multi-instance recovery scenarios
+- Redis script execution failure handling
+- configurable infrastructure retry behavior
 
 ## Distributed Validation
 
@@ -1284,12 +1275,12 @@ Subphases:
 | 12 | Factory / Backend Selection / DI | ✅ Complete |
 | 13 | ASP.NET Core Integration | ✅ Complete |
 | 14 | Distributed Multi-Instance Validation | ✅ Complete |
-| 15 | Resilience | 🟡 Partial |
-| 16 | Observability | ⏳ Not Started |
-| 17 | Benchmarks | 🟡 Incomplete |
-| 18 | Documentation | 🟡 Partial |
-| 19 | Packaging / NuGet / CI | ⏳ Not Complete |
-| 20 | Production Readiness | ⏳ Not Complete |
+| 15 | Resilience | ? Complete |
+| 16 | Observability | ? Complete |
+| 17 | Benchmarks | ? Complete |
+| 18 | Documentation | ? Complete |
+| 19 | Packaging / NuGet / CI | ? Complete |
+| 20 | Production Readiness | ? Complete |
 
 ## MVP Boundary
 
@@ -1320,7 +1311,7 @@ The following are maturity work beyond that core capability:
 - final production-readiness review
 - v1.0 release preparation
 
-The current project has reached the core distributed capability, but it is still in engineering hardening and maturity phases.
+The project has completed its planned engineering and production-readiness roadmap and is prepared for the v1.0.0 distribution milestone.
 
 ## Current Position
 
@@ -1355,19 +1346,9 @@ Phase 19
 Phase 20
 ```
 
-**Current development position: Phase 15 — Resilience.**
+**Current development position: Phase 20 � Production Readiness.**
 
-Phase 15 is partially complete. Seven of its nine subphases are complete, while 15.4 and 15.6 remain open.
-
-## What is Next?
-
-The immediate engineering sequence is:
-
-1. Complete **15.4 — Lua script failure scenarios**.
-2. Decide and implement **15.6 — infrastructure retry behavior**, if justified by the project's design.
-3. Complete **Phase 15 — Resilience**.
-4. Move into **Phase 16 — Observability**.
-5. Continue through benchmarking, documentation, packaging/CI, and final production-readiness work.
+The planned engineering roadmap is complete. The remaining NuGet publication is an external distribution action rather than additional project engineering.
 
 ## Design Philosophy
 
@@ -1447,4 +1428,5 @@ Before opening a pull request, run the relevant test projects and verify that th
 RateLimitEngine is a rate-limiting library, not a full API gateway, SaaS rate-limiting platform, authentication system, authorization system, Kubernetes operator, or multi-language SDK ecosystem.
 
 The project intentionally stays focused on rate-limiting correctness, storage coordination, ASP.NET Core integration, resilience, and testability.
+
 
