@@ -5,7 +5,7 @@ using RateLimitEngine.Core.Time;
 
 namespace RateLimitEngine.Algorithms.InMemory;
 
-public sealed class InMemoryFixedWindowStore : IFixedWindowStore
+internal sealed class InMemoryFixedWindowStore : IFixedWindowStore
 {
     private readonly IClock _clock;
     private readonly ConcurrentDictionary<RateLimitStateKey, WindowState> _states = new();

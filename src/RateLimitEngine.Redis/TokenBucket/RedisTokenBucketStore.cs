@@ -6,7 +6,7 @@ using StackExchange.Redis;
 
 namespace RateLimitEngine.Redis.TokenBucket;
 
-public sealed class RedisTokenBucketStore : ITokenBucketStore
+internal sealed class RedisTokenBucketStore : ITokenBucketStore
 {
     private const string Script = @"
 local capacity = tonumber(ARGV[1])

@@ -5,7 +5,7 @@ using StackExchange.Redis;
 
 namespace RateLimitEngine.Redis.FixedWindow;
 
-public sealed class RedisFixedWindowStore : IFixedWindowStore
+internal sealed class RedisFixedWindowStore : IFixedWindowStore
 {
     private const string Script = @"
 local windowMilliseconds = tonumber(ARGV[1])

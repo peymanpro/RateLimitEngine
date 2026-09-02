@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -12,6 +12,17 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <PackageId>RateLimitEngine.AspNetCore</PackageId>
+    <Description>ASP.NET Core middleware integration for RateLimitEngine with in-memory and Redis-backed rate limiting.</Description>
+    <PackageTags>rate-limiting;rate-limit;aspnetcore;middleware;redis;distributed;dotnet</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md"
+          Pack="true"
+          PackagePath="README.md" />
+  </ItemGroup>
 
 </Project>

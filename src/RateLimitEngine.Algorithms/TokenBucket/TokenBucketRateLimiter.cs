@@ -3,7 +3,7 @@ using RateLimitEngine.Core.Models;
 
 namespace RateLimitEngine.Algorithms.TokenBucket;
 
-public sealed class TokenBucketRateLimiter : IRateLimiter
+internal sealed class TokenBucketRateLimiter : IRateLimiter
 {
     private readonly ITokenBucketStore _store;
     private readonly TokenBucketOptions _options;

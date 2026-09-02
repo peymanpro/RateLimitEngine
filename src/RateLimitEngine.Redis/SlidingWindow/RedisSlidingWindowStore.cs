@@ -5,7 +5,7 @@ using StackExchange.Redis;
 
 namespace RateLimitEngine.Redis.SlidingWindow;
 
-public sealed class RedisSlidingWindowStore : ISlidingWindowStore
+internal sealed class RedisSlidingWindowStore : ISlidingWindowStore
 {
     private const string Script = @"
 local windowMilliseconds = tonumber(ARGV[1])

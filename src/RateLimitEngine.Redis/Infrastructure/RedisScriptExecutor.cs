@@ -2,7 +2,7 @@ using StackExchange.Redis;
 
 namespace RateLimitEngine.Redis.Infrastructure;
 
-public sealed class RedisScriptExecutor : IRedisScriptExecutor
+internal sealed class RedisScriptExecutor : IRedisScriptExecutor
 {
     private readonly IDatabase _database;
 
