@@ -5,7 +5,7 @@ using RateLimitEngine.Core.Time;
 
 namespace RateLimitEngine.Algorithms.InMemory;
 
-public sealed class InMemoryTokenBucketStore : ITokenBucketStore
+internal sealed class InMemoryTokenBucketStore : ITokenBucketStore
 {
     private readonly IClock _clock;
     private readonly ConcurrentDictionary<TokenBucketStateKey, BucketState> _states = new();

@@ -12,6 +12,17 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <PackageId>RateLimitEngine.Algorithms</PackageId>
+    <Description>In-memory rate limiting algorithms for RateLimitEngine, including Fixed Window, Token Bucket, Sliding Window, and GCRA.</Description>
+    <PackageTags>rate-limiting;rate-limit;fixed-window;token-bucket;sliding-window;gcra;dotnet</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md"
+          Pack="true"
+          PackagePath="README.md" />
+  </ItemGroup>
 
 </Project>

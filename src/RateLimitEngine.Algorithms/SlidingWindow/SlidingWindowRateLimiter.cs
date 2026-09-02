@@ -3,7 +3,7 @@ using RateLimitEngine.Core.Models;
 
 namespace RateLimitEngine.Algorithms.SlidingWindow;
 
-public sealed class SlidingWindowRateLimiter : IRateLimiter
+internal sealed class SlidingWindowRateLimiter : IRateLimiter
 {
     private readonly ISlidingWindowStore _store;
 

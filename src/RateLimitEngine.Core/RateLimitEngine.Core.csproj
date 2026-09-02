@@ -4,6 +4,17 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <PackageId>RateLimitEngine.Core</PackageId>
+    <Description>Core abstractions, models, timing, observability, and contracts for RateLimitEngine.</Description>
+    <PackageTags>rate-limiting;rate-limit;dotnet;distributed;infrastructure</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md"
+          Pack="true"
+          PackagePath="README.md" />
+  </ItemGroup>
 
 </Project>

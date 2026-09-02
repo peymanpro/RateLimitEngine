@@ -3,7 +3,7 @@ using RateLimitEngine.Core.Observability;
 
 namespace RateLimitEngine.Redis.Infrastructure;
 
-public sealed class RetryingRedisScriptExecutor : IRedisScriptExecutor
+internal sealed class RetryingRedisScriptExecutor : IRedisScriptExecutor
 {
     private readonly IRedisScriptExecutor _inner;
     private readonly RedisRetryOptions _options;

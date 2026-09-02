@@ -3,7 +3,7 @@ using RateLimitEngine.Core.Models;
 
 namespace RateLimitEngine.Algorithms.Gcra;
 
-public sealed class GcraRateLimiter : IRateLimiter
+internal sealed class GcraRateLimiter : IRateLimiter
 {
     private readonly IGcraStore _store;
 

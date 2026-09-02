@@ -5,7 +5,7 @@ using StackExchange.Redis;
 
 namespace RateLimitEngine.Redis.Gcra;
 
-public sealed class RedisGcraStore : IGcraStore
+internal sealed class RedisGcraStore : IGcraStore
 {
     private const string Script = @"
 local intervalMilliseconds = tonumber(ARGV[1])

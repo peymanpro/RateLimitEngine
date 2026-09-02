@@ -3,7 +3,7 @@ using RateLimitEngine.Core.Models;
 
 namespace RateLimitEngine.Algorithms.FixedWindow;
 
-public sealed class FixedWindowRateLimiter : IRateLimiter
+internal sealed class FixedWindowRateLimiter : IRateLimiter
 {
     private readonly IFixedWindowStore _store;
 

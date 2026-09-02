@@ -1,0 +1,22 @@
+﻿<Project>
+
+  <PropertyGroup>
+    <Version>0.1.0</Version>
+    <Authors>Peyman Salimi</Authors>
+
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+
+    <PackageProjectUrl>https://github.com/peymanpro/RateLimitEngine</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/peymanpro/RateLimitEngine.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+</Project>

@@ -5,7 +5,7 @@ using RateLimitEngine.Core.Time;
 
 namespace RateLimitEngine.Algorithms.InMemory;
 
-public sealed class InMemoryGcraStore : IGcraStore
+internal sealed class InMemoryGcraStore : IGcraStore
 {
     private readonly IClock _clock;
     private readonly ConcurrentDictionary<GcraStateKey, GcraState> _states = new();
