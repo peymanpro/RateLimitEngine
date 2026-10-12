@@ -1251,3 +1251,11 @@ The repository contains the source projects, tests, examples, benchmark infrastr
 - [Production Agent Systems](https://github.com/peymanpro/Production-Agent-Systems) explores adjacent reliability boundaries such as bounded retries, timeouts, and circuit breaking.
 
 These links provide architectural context only. RateLimitEngine remains an independently packaged .NET library with its own algorithms, storage backends, integrations, and tests.
+
+## Automated releases and NuGet publishing
+
+All package versions are centralized in `Directory.Build.props`. The release workflow builds the solution, runs the tests, packs the four NuGet libraries, verifies that the packages match the shared version, and attaches the `.nupkg` files to the GitHub Release.
+
+To release a new version, update the `Version` value in `Directory.Build.props` and push the change to `main`, or push a matching `vMAJOR.MINOR.PATCH` tag. Existing version tags are not overwritten.
+
+The separate NuGet publishing workflow runs when a GitHub Release is published. To enable deployment to nuget.org, configure a repository Actions secret named `NUGET_API_KEY`. When that secret is absent, the validated GitHub Release remains available and the NuGet deployment step is skipped rather than failing.
