@@ -1244,3 +1244,10 @@ GitHub:
 `https://github.com/peymanpro/RateLimitEngine`
 
 The repository contains the source projects, tests, examples, benchmark infrastructure, architecture documentation, and CI configuration.
+
+## Related engineering context
+
+- [Evidence-Grounded Decision Support](https://github.com/peymanpro/Evidence-Grounded-Decision-Support) contains an application-level security baseline with a deliberately single-process fixed-window rate limiter; it is a separate Python service, not a consumer of this .NET library.
+- [Production Agent Systems](https://github.com/peymanpro/Production-Agent-Systems) explores adjacent reliability boundaries such as bounded retries, timeouts, and circuit breaking.
+
+These links provide architectural context only. RateLimitEngine remains an independently packaged .NET library with its own algorithms, storage backends, integrations, and tests.
