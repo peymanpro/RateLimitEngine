@@ -67,20 +67,20 @@ jobs:
           echo "tag=v$project_version" >> "$GITHUB_OUTPUT"
           echo "target_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-        if: steps.version.outputs.skip != 'true'
       - name: Restore
+        if: steps.version.outputs.skip != 'true'
         run: dotnet restore RateLimitEngine.sln
 
-        if: steps.version.outputs.skip != 'true'
       - name: Build
+        if: steps.version.outputs.skip != 'true'
         run: dotnet build RateLimitEngine.sln --configuration Release --no-restore
 
-        if: steps.version.outputs.skip != 'true'
       - name: Test
+        if: steps.version.outputs.skip != 'true'
         run: dotnet test RateLimitEngine.sln --configuration Release --no-build
 
-        if: steps.version.outputs.skip != 'true'
       - name: Pack NuGet packages
+        if: steps.version.outputs.skip != 'true'
         run: |
           mkdir -p artifacts
           dotnet pack src/RateLimitEngine.Core/RateLimitEngine.Core.csproj --configuration Release --no-build --output artifacts
@@ -88,8 +88,8 @@ jobs:
           dotnet pack src/RateLimitEngine.Redis/RateLimitEngine.Redis.csproj --configuration Release --no-build --output artifacts
           dotnet pack src/RateLimitEngine.AspNetCore/RateLimitEngine.AspNetCore.csproj --configuration Release --no-build --output artifacts
 
-        if: steps.version.outputs.skip != 'true'
       - name: Validate packages
+        if: steps.version.outputs.skip != 'true'
         env:
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
         run: |
@@ -99,8 +99,8 @@ jobs:
           test -f "artifacts/RateLimitEngine.Redis.$PACKAGE_VERSION.nupkg"
           test -f "artifacts/RateLimitEngine.AspNetCore.$PACKAGE_VERSION.nupkg"
 
-        if: steps.version.outputs.skip != 'true'
       - name: Publish GitHub Release if not already published
+        if: steps.version.outputs.skip != 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
