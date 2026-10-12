@@ -1,0 +1,108 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Optional version to publish; must match Directory.Build.props"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Validate, pack, and publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Resolve and validate release source
+        id: version
+        shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          project_version="$(dotnet msbuild src/RateLimitEngine.Core/RateLimitEngine.Core.csproj -getProperty:PackageVersion | tail -n 1)"
+          tag="v$project_version"
+          if [[ "$REF_TYPE" == "tag" ]]; then
+            [[ "$REF_NAME" == "$tag" ]] || { echo "Tag $REF_NAME must match central package version $tag." >&2; exit 1; }
+          elif git ls-remote --exit-code origin "refs/tags/$tag" >/dev/null 2>&1; then
+            git fetch origin "refs/tags/$tag:refs/tags/$tag"
+            git checkout --detach "$tag"
+            project_version="$(dotnet msbuild src/RateLimitEngine.Core/RateLimitEngine.Core.csproj -getProperty:PackageVersion | tail -n 1)"
+            [[ "v$project_version" == "$tag" ]] || { echo "Tag version mismatch." >&2; exit 1; }
+          fi
+          [[ "$project_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Expected MAJOR.MINOR.PATCH." >&2; exit 1; }
+          [[ -z "$INPUT_VERSION" || "$INPUT_VERSION" == "$project_version" ]] || { echo "Requested version does not match Directory.Build.props." >&2; exit 1; }
+          echo "version=$project_version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$project_version" >> "$GITHUB_OUTPUT"
+          echo "target_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore
+        run: dotnet restore RateLimitEngine.sln
+
+      - name: Build
+        run: dotnet build RateLimitEngine.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test RateLimitEngine.sln --configuration Release --no-build
+
+      - name: Pack NuGet packages
+        run: |
+          mkdir -p artifacts
+          dotnet pack src/RateLimitEngine.Core/RateLimitEngine.Core.csproj --configuration Release --no-build --output artifacts
+          dotnet pack src/RateLimitEngine.Algorithms/RateLimitEngine.Algorithms.csproj --configuration Release --no-build --output artifacts
+          dotnet pack src/RateLimitEngine.Redis/RateLimitEngine.Redis.csproj --configuration Release --no-build --output artifacts
+          dotnet pack src/RateLimitEngine.AspNetCore/RateLimitEngine.AspNetCore.csproj --configuration Release --no-build --output artifacts
+
+      - name: Validate packages
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          test -f "artifacts/RateLimitEngine.Core.$PACKAGE_VERSION.nupkg"
+          test -f "artifacts/RateLimitEngine.Algorithms.$PACKAGE_VERSION.nupkg"
+          test -f "artifacts/RateLimitEngine.Redis.$PACKAGE_VERSION.nupkg"
+          test -f "artifacts/RateLimitEngine.AspNetCore.$PACKAGE_VERSION.nupkg"
+
+      - name: Publish GitHub Release if not already published
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          TARGET_SHA: ${{ steps.version.outputs.target_sha }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" --repo "$GH_REPO" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists; no duplicate will be created."
+            exit 0
+          fi
+          if [[ "$REF_TYPE" == "tag" ]] || git ls-remote --exit-code origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" artifacts/*.nupkg --verify-tag --repo "$GH_REPO" \
+              --title "RateLimitEngine $RELEASE_TAG" --generate-notes
+          else
+            gh release create "$RELEASE_TAG" artifacts/*.nupkg --target "$TARGET_SHA" --repo "$GH_REPO" \
+              --title "RateLimitEngine $RELEASE_TAG" --generate-notes
+          fi
