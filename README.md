@@ -1258,4 +1258,4 @@ All package versions are centralized in `Directory.Build.props`. The release wor
 
 To release a new version, update the `Version` value in `Directory.Build.props` and push the change to `main`, or push a matching `vMAJOR.MINOR.PATCH` tag. Existing version tags are not overwritten.
 
-The separate NuGet publishing workflow runs when a GitHub Release is published. To enable deployment to nuget.org, configure a repository Actions secret named `NUGET_API_KEY`. When that secret is absent, the validated GitHub Release remains available and the NuGet deployment step is skipped rather than failing.
+The separate NuGet publishing workflow runs when a GitHub Release is published. To enable deployment to nuget.org, configure a repository Actions secret named `NUGET_API_KEY`. When that secret is absent, the validated GitHub Release remains available and the NuGet deployment step is skipped rather than failing. CI starts two Redis instances (ports 6379 and 6382) for the ordinary distributed tests and the dedicated timeout scenarios.
