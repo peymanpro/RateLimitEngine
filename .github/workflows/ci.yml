@@ -39,7 +39,9 @@ jobs:
       - name: Validate packages
         shell: bash
         run: |
-          test -f artifacts/ci/RateLimitEngine.Core.1.0.0.nupkg
-          test -f artifacts/ci/RateLimitEngine.Algorithms.1.0.0.nupkg
-          test -f artifacts/ci/RateLimitEngine.Redis.1.0.0.nupkg
-          test -f artifacts/ci/RateLimitEngine.AspNetCore.1.0.0.nupkg
+          VERSION="$(dotnet msbuild src/RateLimitEngine.Core/RateLimitEngine.Core.csproj -getProperty:PackageVersion | tail -n 1)"
+          test -n "$VERSION"
+          test -f "artifacts/ci/RateLimitEngine.Core.$VERSION.nupkg"
+          test -f "artifacts/ci/RateLimitEngine.Algorithms.$VERSION.nupkg"
+          test -f "artifacts/ci/RateLimitEngine.Redis.$VERSION.nupkg"
+          test -f "artifacts/ci/RateLimitEngine.AspNetCore.$VERSION.nupkg"
