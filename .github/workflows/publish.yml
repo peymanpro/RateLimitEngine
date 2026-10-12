@@ -12,6 +12,8 @@ jobs:
   publish:
     name: Build, Test and Publish NuGet Packages
     runs-on: ubuntu-latest
+    env:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 
     steps:
       - name: Checkout
@@ -65,7 +67,13 @@ jobs:
           test -f artifacts/RateLimitEngine.AspNetCore.*.nupkg
 
       - name: Publish to NuGet
+        if: ${{ env.NUGET_API_KEY != '' }}
         run: |
           dotnet nuget push "artifacts/*.nupkg" \
+            --api-key "$NUGET_API_KEY" \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
+
+      - name: Skip NuGet deployment when no API key is configured
+        if: ${{ env.NUGET_API_KEY == '' }}
+        run: echo "GitHub Release validation completed; NuGet deployment skipped because NUGET_API_KEY is not configured."
