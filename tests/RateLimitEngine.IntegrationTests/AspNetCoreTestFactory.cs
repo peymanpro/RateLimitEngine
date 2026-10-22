@@ -27,7 +27,8 @@ public sealed class AspNetCoreTestFactory
                 services.RemoveAll<IRateLimitKeyResolver>();
                 services.RemoveAll<RateLimitOptions>();
 
-                services.AddSingleton<IClock, SystemClock>();
+                // Use a fixed instant so this test cannot cross a wall-clock window boundary.
+                services.AddSingleton<IClock, FixedTestClock>();
 
                 services.AddRateLimitEngineInMemory();
 
@@ -51,6 +52,19 @@ public sealed class AspNetCoreTestFactory
                 services.AddSingleton<IRateLimitKeyResolver>(
                     new TestRateLimitKeyResolver(_testKey));
             });
+    }
+
+    private sealed class FixedTestClock : IClock
+    {
+        private static readonly DateTimeOffset Instant =
+            new(2026, 1, 1, 12, 0, 0, TimeSpan.Zero);
+
+        public DateTimeOffset UtcNow => Instant;
+
+        public long GetTimestamp() => Instant.Ticks;
+
+        public TimeSpan GetElapsedTime(long startingTimestamp) =>
+            TimeSpan.FromTicks(Instant.Ticks - startingTimestamp);
     }
 
     private sealed class TestRateLimitKeyResolver
