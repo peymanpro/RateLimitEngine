@@ -3,6 +3,12 @@ name: Publish NuGet Packages
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Published GitHub Release tag to publish to NuGet.org (for example, v1.0.1)"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -34,7 +40,7 @@ jobs:
       - name: Check out the exact GitHub Release tag
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event.release.tag_name || inputs.release_tag }}
 
       - name: Set up .NET SDKs
         uses: actions/setup-dotnet@v4
@@ -47,7 +53,7 @@ jobs:
         id: version
         shell: bash
         env:
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
         run: |
           set -euo pipefail
           package_version="$(dotnet msbuild src/RateLimitEngine.Core/RateLimitEngine.Core.csproj -getProperty:PackageVersion | tail -n 1)"
