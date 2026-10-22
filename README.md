@@ -36,7 +36,7 @@ dotnet add package RateLimitEngine.Redis
 
 `RateLimitEngine.Core` is installed automatically as a dependency where required.
 
-The current release is `1.0.0`.
+The current GitHub Release is `1.0.1`. NuGet.org package availability begins after the first successful NuGet publishing workflow run.
 
 ---
 
@@ -1059,7 +1059,7 @@ RateLimitEngine is split into focused packages.
 | `RateLimitEngine.Redis`      | Redis-backed state implementations             |
 | `RateLimitEngine.AspNetCore` | ASP.NET Core middleware and configuration      |
 
-The packages are versioned together for the current `1.0.0` release.
+The packages are versioned together for the current `1.0.1` GitHub Release.
 
 ---
 
@@ -1258,4 +1258,4 @@ All package versions are centralized in `Directory.Build.props`. The release wor
 
 To release a new version, update the `Version` value in `Directory.Build.props` and push the change to `main`, or push a matching `vMAJOR.MINOR.PATCH` tag. Existing version tags are not overwritten.
 
-The GitHub Release workflow runs automatically on pushes to `main`: it validates the centralized version, restores/builds/tests the solution, packs all four libraries, verifies the `.nupkg` and `.snupkg` files, and creates a versioned GitHub Release with those artifacts. After the GitHub Release is created, the same workflow publishes the `.nupkg` and `.snupkg` files to NuGet.org when a valid repository Actions secret named `NUGET_API_KEY` is available; without the secret, GitHub Release still succeeds and NuGet publishing is explicitly skipped. To publish an existing GitHub Release manually after configuring the key, run `.github/workflows/publish.yml` from Actions and provide its exact tag (for example, `v1.0.1`). That workflow checks out the tag, verifies its package version, runs build/tests/package-consumer validation, and then publishes the packages and symbols to NuGet.org. CI starts two Redis instances (ports 6379 and 6382) for ordinary distributed tests and dedicated timeout scenarios.
+The GitHub Release workflow runs automatically on pushes to `main`: it validates the centralized version, restores/builds/tests the solution, packs all four libraries, verifies the `.nupkg` and `.snupkg` files, and creates a versioned GitHub Release with those artifacts. It then dispatches `.github/workflows/publish.yml`, which performs a fresh build, test run, and package-consumer validation before publishing the `.nupkg` and `.snupkg` files to NuGet.org through Trusted Publishing (GitHub OIDC); no long-lived NuGet API key or repository secret is required. The trusted-publishing policy on NuGet.org must match the GitHub repository and the workflow file name `publish.yml`. To publish an existing GitHub Release manually, run `Publish NuGet Packages` from Actions and provide its exact tag (for example, `v1.0.1`). CI starts two Redis instances (ports 6379 and 6382) for ordinary distributed tests and dedicated timeout scenarios.
