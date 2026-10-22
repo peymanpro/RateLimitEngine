@@ -27,10 +27,10 @@ public sealed class AspNetCoreTestFactory
                 services.RemoveAll<IRateLimitKeyResolver>();
                 services.RemoveAll<RateLimitOptions>();
 
-                // Use a fixed instant so this test cannot cross a wall-clock window boundary.
-                services.AddSingleton<IClock, FixedTestClock>();
-
                 services.AddRateLimitEngineInMemory();
+
+                // Register after the extension so the test clock overrides its SystemClock.
+                services.AddSingleton<IClock, FixedTestClock>();
 
                 services.AddSingleton(
                     new RateLimitOptions
