@@ -121,6 +121,17 @@ jobs:
           test -f "artifacts/RateLimitEngine.AspNetCore.$PACKAGE_VERSION.nupkg"
           bash .github/scripts/validate-nuget-packages.sh "$PACKAGE_VERSION" artifacts
 
+      - name: Require NuGet publishing credentials before creating a release
+        if: steps.version.outputs.skip != 'true'
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [[ -z "${NUGET_API_KEY:-}" ]]; then
+            echo "::error::Set the repository Actions secret NUGET_API_KEY before releasing a new package version." >&2
+            exit 1
+          fi
+
       - name: Publish GitHub Release if not already published
         if: steps.version.outputs.skip != 'true'
         shell: bash
