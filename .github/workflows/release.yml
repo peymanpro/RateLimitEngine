@@ -12,7 +12,7 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: release-${{ github.ref }}
@@ -22,6 +22,9 @@ jobs:
   release:
     name: Validate, pack, and publish
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
     services:
       redis:
         image: redis:7-alpine
@@ -144,24 +147,12 @@ jobs:
               --title "RateLimitEngine $RELEASE_TAG" --generate-notes
           fi
 
-      - name: Publish packages and symbols to NuGet.org when configured
+      - name: Dispatch NuGet publishing workflow via Trusted Publishing
         if: steps.version.outputs.skip != 'true'
-        shell: bash
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
         run: |
           set -euo pipefail
-          if [[ -z "${NUGET_API_KEY:-}" ]]; then
-            echo "::notice::GitHub Release created successfully. NuGet publication was skipped because NUGET_API_KEY is not configured."
-            exit 0
-          fi
-
-          dotnet nuget push "artifacts/*.nupkg" \
-            --api-key "$NUGET_API_KEY" \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate
-
-          dotnet nuget push "artifacts/*.snupkg" \
-            --api-key "$NUGET_API_KEY" \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate
+          gh workflow run publish.yml --repo "$GH_REPO" --ref main -f "release_tag=$RELEASE_TAG"
