@@ -2,6 +2,11 @@
 
 > A production-oriented, extensible, distributed rate-limiting library for .NET and ASP.NET Core.
 
+[![NuGet: Core](https://img.shields.io/nuget/v/RateLimitEngine.Core.svg)](https://www.nuget.org/packages/RateLimitEngine.Core/)
+[![NuGet: Algorithms](https://img.shields.io/nuget/v/RateLimitEngine.Algorithms.svg)](https://www.nuget.org/packages/RateLimitEngine.Algorithms/)
+[![NuGet: Redis](https://img.shields.io/nuget/v/RateLimitEngine.Redis.svg)](https://www.nuget.org/packages/RateLimitEngine.Redis/)
+[![NuGet: ASP.NET Core](https://img.shields.io/nuget/v/RateLimitEngine.AspNetCore.svg)](https://www.nuget.org/packages/RateLimitEngine.AspNetCore/)
+
 RateLimitEngine is a .NET 8 rate-limiting library built around correctness, concurrency safety, deterministic behavior, distributed state coordination, explicit failure semantics, and testability.
 
 It provides four rate-limiting algorithms, in-memory and Redis-backed state, ASP.NET Core integration, weighted requests, customizable client identification, observability, and explicit behavior when the rate-limiting backend becomes unavailable.
@@ -36,7 +41,7 @@ dotnet add package RateLimitEngine.Redis
 
 `RateLimitEngine.Core` is installed automatically as a dependency where required.
 
-The current GitHub Release is `1.0.1`. NuGet.org package availability begins after the first successful NuGet publishing workflow run.
+The current release is `1.0.1`. All four packages are published on NuGet.org and can be opened from the badges at the top of this README.
 
 ---
 
