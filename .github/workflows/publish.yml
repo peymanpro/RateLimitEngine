@@ -17,6 +17,9 @@ jobs:
   publish:
     name: Build, Test and Publish NuGet Packages
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     services:
       redis:
         image: redis:7-alpine
@@ -86,21 +89,22 @@ jobs:
           PACKAGE_VERSION: ${{ steps.version.outputs.package_version }}
         run: bash .github/scripts/validate-nuget-packages.sh "$PACKAGE_VERSION" artifacts
 
-      - name: Require NuGet publishing credentials
-        shell: bash
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: |
-          if [[ -z "${NUGET_API_KEY:-}" ]]; then
-            echo "::error::Set the repository Actions secret NUGET_API_KEY before publishing this GitHub Release to NuGet.org." >&2
-            exit 1
-          fi
+      - name: NuGet login via Trusted Publishing (OIDC)
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: peyman9722
 
       - name: Publish packages and symbols to NuGet.org
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         run: |
+          set -euo pipefail
           dotnet nuget push "artifacts/*.nupkg" \
+            --api-key "$NUGET_API_KEY" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+          dotnet nuget push "artifacts/*.snupkg" \
             --api-key "$NUGET_API_KEY" \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
