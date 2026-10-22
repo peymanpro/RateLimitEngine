@@ -36,7 +36,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       - name: Restore
         run: dotnet restore RateLimitEngine.sln
@@ -49,18 +51,19 @@ jobs:
 
       - name: Pack
         run: |
-          mkdir -p artifacts/ci
-          dotnet pack src/RateLimitEngine.Core/RateLimitEngine.Core.csproj --configuration Release --no-build --output artifacts/ci
-          dotnet pack src/RateLimitEngine.Algorithms/RateLimitEngine.Algorithms.csproj --configuration Release --no-build --output artifacts/ci
-          dotnet pack src/RateLimitEngine.Redis/RateLimitEngine.Redis.csproj --configuration Release --no-build --output artifacts/ci
-          dotnet pack src/RateLimitEngine.AspNetCore/RateLimitEngine.AspNetCore.csproj --configuration Release --no-build --output artifacts/ci
+          mkdir -p artifacts
+          dotnet pack src/RateLimitEngine.Core/RateLimitEngine.Core.csproj --configuration Release --no-build --output artifacts
+          dotnet pack src/RateLimitEngine.Algorithms/RateLimitEngine.Algorithms.csproj --configuration Release --no-build --output artifacts
+          dotnet pack src/RateLimitEngine.Redis/RateLimitEngine.Redis.csproj --configuration Release --no-build --output artifacts
+          dotnet pack src/RateLimitEngine.AspNetCore/RateLimitEngine.AspNetCore.csproj --configuration Release --no-build --output artifacts
 
       - name: Validate packages
         shell: bash
         run: |
           VERSION="$(dotnet msbuild src/RateLimitEngine.Core/RateLimitEngine.Core.csproj -getProperty:PackageVersion | tail -n 1)"
           test -n "$VERSION"
-          test -f "artifacts/ci/RateLimitEngine.Core.$VERSION.nupkg"
-          test -f "artifacts/ci/RateLimitEngine.Algorithms.$VERSION.nupkg"
-          test -f "artifacts/ci/RateLimitEngine.Redis.$VERSION.nupkg"
-          test -f "artifacts/ci/RateLimitEngine.AspNetCore.$VERSION.nupkg"
+          test -f "artifacts/RateLimitEngine.Core.$VERSION.nupkg"
+          test -f "artifacts/RateLimitEngine.Algorithms.$VERSION.nupkg"
+          test -f "artifacts/RateLimitEngine.Redis.$VERSION.nupkg"
+          test -f "artifacts/RateLimitEngine.AspNetCore.$VERSION.nupkg"
+          bash .github/scripts/validate-nuget-packages.sh "$VERSION" artifacts
