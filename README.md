@@ -64,7 +64,6 @@ dotnet add package RateLimitEngine.Redis
 
 `RateLimitEngine.Core` is installed automatically as a dependency where required.
 
-For direct NuGet.org links and package-specific installation commands, see the [NuGet packages section above](#nuget-packages).
 
 ---
 
