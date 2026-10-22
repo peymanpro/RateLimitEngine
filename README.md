@@ -1,17 +1,40 @@
 # RateLimitEngine
 
-> A production-oriented, extensible, distributed rate-limiting library for .NET and ASP.NET Core.
+**RateLimitEngine** is an extensible rate-limiting library for .NET and ASP.NET Core. It provides four algorithms, weighted requests, in-memory and Redis-backed state, HTTP middleware, observability, and explicit failure strategies.
 
-[![NuGet: Core](https://img.shields.io/nuget/v/RateLimitEngine.Core.svg)](https://www.nuget.org/packages/RateLimitEngine.Core/)
-[![NuGet: Algorithms](https://img.shields.io/nuget/v/RateLimitEngine.Algorithms.svg)](https://www.nuget.org/packages/RateLimitEngine.Algorithms/)
-[![NuGet: Redis](https://img.shields.io/nuget/v/RateLimitEngine.Redis.svg)](https://www.nuget.org/packages/RateLimitEngine.Redis/)
-[![NuGet: ASP.NET Core](https://img.shields.io/nuget/v/RateLimitEngine.AspNetCore.svg)](https://www.nuget.org/packages/RateLimitEngine.AspNetCore/)
+The design separates three concerns: **rate-limiting algorithms**, **state storage**, and **application integration**. The library emphasizes concurrency safety, predictable time-dependent behavior, distributed coordination, and automated testing.
 
-RateLimitEngine is a .NET 8 rate-limiting library built around correctness, concurrency safety, deterministic behavior, distributed state coordination, explicit failure semantics, and testability.
+**Current NuGet version: 1.0.1** · All four packages are published on NuGet.org.
 
-It provides four rate-limiting algorithms, in-memory and Redis-backed state, ASP.NET Core integration, weighted requests, customizable client identification, observability, and explicit behavior when the rate-limiting backend becomes unavailable.
+[![NuGet: Core](https://img.shields.io/nuget/v/RateLimitEngine.Core.svg)](https://www.nuget.org/packages/RateLimitEngine.Core/1.0.1)
+[![NuGet: Algorithms](https://img.shields.io/nuget/v/RateLimitEngine.Algorithms.svg)](https://www.nuget.org/packages/RateLimitEngine.Algorithms/1.0.1)
+[![NuGet: Redis](https://img.shields.io/nuget/v/RateLimitEngine.Redis.svg)](https://www.nuget.org/packages/RateLimitEngine.Redis/1.0.1)
+[![NuGet: ASP.NET Core](https://img.shields.io/nuget/v/RateLimitEngine.AspNetCore.svg)](https://www.nuget.org/packages/RateLimitEngine.AspNetCore/1.0.1)
 
-The library is designed to keep the **rate-limiting algorithm**, **state storage**, and **HTTP integration** as separate concerns.
+## NuGet packages
+
+Choose the package based on the part of RateLimitEngine your application needs. Each link opens that package's page on NuGet.org.
+
+### 1. Core library
+
+- **RateLimitEngine.Core** — shared abstractions, contracts, and models.
+  - **NuGet page:** [RateLimitEngine.Core 1.0.1](https://www.nuget.org/packages/RateLimitEngine.Core/1.0.1)
+  - Install: `dotnet add package RateLimitEngine.Core`
+
+### 2. Rate-limiting algorithms
+
+- **RateLimitEngine.Algorithms** — Fixed Window, Sliding Window, Token Bucket, and GCRA algorithms, with in-memory state support.
+  - **NuGet page:** [RateLimitEngine.Algorithms 1.0.1](https://www.nuget.org/packages/RateLimitEngine.Algorithms/1.0.1)
+  - Install: `dotnet add package RateLimitEngine.Algorithms`
+
+### 3. Framework and storage integrations
+
+- **RateLimitEngine.AspNetCore** — ASP.NET Core middleware and configuration.
+  - **NuGet page:** [RateLimitEngine.AspNetCore 1.0.1](https://www.nuget.org/packages/RateLimitEngine.AspNetCore/1.0.1)
+  - Install: `dotnet add package RateLimitEngine.AspNetCore`
+- **RateLimitEngine.Redis** — Redis-backed state for distributed deployments.
+  - **NuGet page:** [RateLimitEngine.Redis 1.0.1](https://www.nuget.org/packages/RateLimitEngine.Redis/1.0.1)
+  - Install: `dotnet add package RateLimitEngine.Redis`
 
 ---
 
@@ -41,7 +64,7 @@ dotnet add package RateLimitEngine.Redis
 
 `RateLimitEngine.Core` is installed automatically as a dependency where required.
 
-The current release is `1.0.1`. All four packages are published on NuGet.org and can be opened from the badges at the top of this README.
+For direct NuGet.org links and package-specific installation commands, see the [NuGet packages section above](#nuget-packages).
 
 ---
 
