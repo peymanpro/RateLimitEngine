@@ -50,7 +50,9 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       - name: Resolve and validate release source
         id: version
@@ -117,6 +119,7 @@ jobs:
           test -f "artifacts/RateLimitEngine.Algorithms.$PACKAGE_VERSION.nupkg"
           test -f "artifacts/RateLimitEngine.Redis.$PACKAGE_VERSION.nupkg"
           test -f "artifacts/RateLimitEngine.AspNetCore.$PACKAGE_VERSION.nupkg"
+          bash .github/scripts/validate-nuget-packages.sh "$PACKAGE_VERSION" artifacts
 
       - name: Publish GitHub Release if not already published
         if: steps.version.outputs.skip != 'true'
@@ -134,9 +137,9 @@ jobs:
             exit 0
           fi
           if [[ "$REF_TYPE" == "tag" ]] || git ls-remote --exit-code origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release create "$RELEASE_TAG" artifacts/*.nupkg --verify-tag --repo "$GH_REPO" \
+            gh release create "$RELEASE_TAG" artifacts/*.nupkg artifacts/*.snupkg --verify-tag --repo "$GH_REPO" \
               --title "RateLimitEngine $RELEASE_TAG" --generate-notes
           else
-            gh release create "$RELEASE_TAG" artifacts/*.nupkg --target "$TARGET_SHA" --repo "$GH_REPO" \
+            gh release create "$RELEASE_TAG" artifacts/*.nupkg artifacts/*.snupkg --target "$TARGET_SHA" --repo "$GH_REPO" \
               --title "RateLimitEngine $RELEASE_TAG" --generate-notes
           fi

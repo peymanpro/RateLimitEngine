@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   publish:
@@ -31,17 +30,33 @@ jobs:
           --health-interval 5s
           --health-timeout 3s
           --health-retries 20
-    env:
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-
     steps:
-      - name: Checkout
+      - name: Check out the exact GitHub Release tag
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
 
-      - name: Setup .NET
+      - name: Set up .NET SDKs
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Validate release tag and package version
+        id: version
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          package_version="$(dotnet msbuild src/RateLimitEngine.Core/RateLimitEngine.Core.csproj -getProperty:PackageVersion | tail -n 1)"
+          [[ "$package_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Invalid package version: $package_version" >&2; exit 1; }
+          [[ "$RELEASE_TAG" == "v$package_version" ]] || {
+            echo "::error::Release tag $RELEASE_TAG does not match package version $package_version." >&2
+            exit 1
+          }
+          echo "package_version=$package_version" >> "$GITHUB_OUTPUT"
 
       - name: Restore
         run: dotnet restore RateLimitEngine.sln
@@ -55,44 +70,31 @@ jobs:
       - name: Pack NuGet packages
         run: |
           mkdir -p artifacts
+          dotnet pack src/RateLimitEngine.Core/RateLimitEngine.Core.csproj --configuration Release --no-build --output artifacts
+          dotnet pack src/RateLimitEngine.Algorithms/RateLimitEngine.Algorithms.csproj --configuration Release --no-build --output artifacts
+          dotnet pack src/RateLimitEngine.Redis/RateLimitEngine.Redis.csproj --configuration Release --no-build --output artifacts
+          dotnet pack src/RateLimitEngine.AspNetCore/RateLimitEngine.AspNetCore.csproj --configuration Release --no-build --output artifacts
 
-          dotnet pack src/RateLimitEngine.Core/RateLimitEngine.Core.csproj \
-            --configuration Release \
-            --no-build \
-            --output artifacts
+      - name: Validate packages and test real package consumers
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.package_version }}
+        run: bash .github/scripts/validate-nuget-packages.sh "$PACKAGE_VERSION" artifacts
 
-          dotnet pack src/RateLimitEngine.Algorithms/RateLimitEngine.Algorithms.csproj \
-            --configuration Release \
-            --no-build \
-            --output artifacts
-
-          dotnet pack src/RateLimitEngine.Redis/RateLimitEngine.Redis.csproj \
-            --configuration Release \
-            --no-build \
-            --output artifacts
-
-          dotnet pack src/RateLimitEngine.AspNetCore/RateLimitEngine.AspNetCore.csproj \
-            --configuration Release \
-            --no-build \
-            --output artifacts
-
-      - name: Verify packages
+      - name: Require NuGet publishing credentials
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
-          ls -la artifacts
+          if [[ -z "${NUGET_API_KEY:-}" ]]; then
+            echo "::error::Set the repository Actions secret NUGET_API_KEY before publishing this GitHub Release to NuGet.org." >&2
+            exit 1
+          fi
 
-          test -f artifacts/RateLimitEngine.Core.*.nupkg
-          test -f artifacts/RateLimitEngine.Algorithms.*.nupkg
-          test -f artifacts/RateLimitEngine.Redis.*.nupkg
-          test -f artifacts/RateLimitEngine.AspNetCore.*.nupkg
-
-      - name: Publish to NuGet
-        if: ${{ env.NUGET_API_KEY != '' }}
+      - name: Publish packages and symbols to NuGet.org
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
           dotnet nuget push "artifacts/*.nupkg" \
             --api-key "$NUGET_API_KEY" \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
-
-      - name: Skip NuGet deployment when no API key is configured
-        if: ${{ env.NUGET_API_KEY == '' }}
-        run: echo "GitHub Release validation completed; NuGet deployment skipped because NUGET_API_KEY is not configured."
